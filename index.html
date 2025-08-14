@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2&display=swap" rel="stylesheet">
+<title>Rahul Jangid</title>
+<link rel="icon" type="image/png" href="/RJ/favicon.png">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        background: #000;
+        color: #fff;
+        font-family: 'Segoe UI', monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        min-height: 100vh;
+        gap: 20px;
+        user-select: none;
+    }
+    .block {
+        width: 100%;
+        max-width: 500px;
+        background: #000;
+        padding: 20px;
+        border-radius: 10px;
+        border: none;
+    }
+    #quote {
+        font-family: 'Rock Salt', cursive;
+        font-size: clamp(2rem, 6vw, 4rem);
+        color: white;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    #author {
+        font-family: 'Rock Salt', cursive;
+        font-size: clamp(0.9rem, 3vw, 1.5rem);
+        color: #aaa;
+        text-align: center;
+        margin-top: -8px;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    #clock {
+        font-family: 'Press Start 2P', monospace;
+        font-size: clamp(1.8rem, 6vw, 3rem);
+        text-align: center;
+        margin-bottom: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    #date {
+        font-family: 'Press Start 2P', monospace;
+        font-size: clamp(0.9rem, 3vw, 1.2rem);
+        text-align: center;
+        margin: 4px 0;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    #countdown {
+        font-family: 'Press Start 2P', monospace;
+        font-size: clamp(0.8rem, 3vw, 1.1rem);
+        color: yellow;
+        text-align: center;
+        margin: 4px 0;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    #countdown-month {
+        font-family: 'Press Start 2P', monospace;
+        font-size: clamp(0.7rem, 3vw, 1rem);
+        color: cyan;
+        text-align: center;
+        margin: 4px 0;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    
+    .progress-bar-container {
+    position: relative;
+    width: 100%;
+    height: 30px; /* Adjust the height of the bar */
+    margin-top: 10px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 100%;
+    background-color: #333;
+    border-radius: 5px;
+    position: relative;
+}
+
+.progress-bar > div {
+    height: 100%;
+    background-color: grey;
+    border-radius: 5px;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.progress-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
+    z-index: 1;
+}
+
+    
+    #todo-messages {
+        background: #000;
+        border: 1px solid #444;
+        height: 200px;
+        overflow-y: auto;
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        scrollbar-width: thin;
+        scrollbar-color: cyan transparent;
+    }
+    #todo-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    #todo-messages::-webkit-scrollbar-thumb {
+        background: cyan;
+        border-radius: 3px;
+    }
+    .message {
+        background: #222;
+        padding: 10px;
+        border-left: 4px solid cyan;
+        font-family: 'Exo 2', monospace;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 4px;
+        word-break: break-word;
+        font-size: 0.8rem;
+    }
+    .delete-btn {
+        background: transparent;
+        color: red;
+        border: none;
+        cursor: pointer;
+        font-size: 1.4rem;
+        transition: transform 0.2s;
+        outline: none;
+        user-select: none;
+    }
+    .delete-btn:hover {
+        transform: scale(1.2);
+    }
+    #todo-input, #password-input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #444;
+        border-radius: 5px;
+        background: #333;
+        color: white;
+        margin-top: 10px;
+        outline: none;
+        font-size: 1rem;
+        transition: border 0.3s;
+        user-select: none;
+    }
+    #todo-input:focus, #password-input:focus {
+        border-color: cyan;
+    }
+    #todo-input {
+        display: none;
+    }
+    button, input {
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+    #copied-info {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        background: cyan;
+        color: black;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 0.9rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s, transform 0.3s;
+    }
+    #copied-info.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    @keyframes blink-red {
+        0%, 100% { border-color: #444; }
+        50% { border-color: red; }
+    }
+    .blink-red {
+        animation: blink-red 0.2s 3;
+    }
+
+    @media (max-width: 600px) {
+        body {
+            padding: 15px;
+            gap: 15px;
+        }
+        .block {
+            padding: 15px;
+        }
+    }
+    #progress-summary {
+        text-align: center;
+        font-family: Monospace;
+        font-size: 0.5rem;
+        font-weight: bold;
+        color: grey;
+        margin-top: 10px;
+        letter-spacing: 1px;
+    }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rock+Salt&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="block">
+    <div id="quote">I'll be back</div>
+    <div id="author">- Rahul Jangid</div>
+</div>
+
+<div class="block">
+    <div id="clock"></div>
+    <div id="date"></div>
+    <div id="countdown">
+    <div class="progress-bar-container">
+        <div id="progress-countdown" class="progress-bar">
+            <div></div> <!-- This div will be dynamically filled -->
+        </div>
+        <span id="countdown-text" class="progress-text"></span> <!-- Text inside the progress bar -->
+    </div>
+</div>
+
+<div id="countdown-month">
+    <div class="progress-bar-container">
+        <div id="progress-countdown-month" class="progress-bar">
+            <div></div> <!-- This div will be dynamically filled -->
+        </div>
+        <span id="countdown-month-text" class="progress-text"></span> <!-- Text inside the progress bar -->
+    </div>
+</div>
+
+<div id="progress-summary"></div>
+
+</div>
+
+<div class="block">
+    <div id="todo-messages"></div>
+    <input type="text" id="todo-input" placeholder="Type a task and press Enter..." autocomplete="off">
+    <input type="password" id="password-input" placeholder="Enter Access Code..." autocomplete="off">
+</div>
+
+<div id="copied-info">Copied!</div>
+   
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyA5iLF-J-WvNaYm63r8rDZU8_rtZsgwYng",
+        authDomain: "my-todo-2e111.firebaseapp.com",
+        databaseURL: "https://my-todo-2e111-default-rtdb.firebaseio.com",
+        projectId: "my-todo-2e111",
+        storageBucket: "my-todo-2e111.appspot.com",
+        messagingSenderId: "765517702108",
+        appId: "1:765517702108:web:2dfe7d6205040cfd2ea519"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const todoMessages = document.getElementById('todo-messages');
+    const todoInput = document.getElementById('todo-input');
+    const passwordInput = document.getElementById('password-input');
+    const copiedInfo = document.getElementById('copied-info');
+
+    const accessCode = "786";
+
+    db.ref('todos').on('value', snapshot => {
+        const todos = snapshot.val() || [];
+        renderTodos(todos);
+    });
+
+    function renderTodos(todos) {
+        todoMessages.innerHTML = '';
+        todos.forEach((text, index) => {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message';
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            textSpan.style.cursor = 'pointer';
+            textSpan.addEventListener('click', () => {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopied();
+                }).catch(err => console.error('Copy failed:', err));
+            });
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn';
+            delBtn.textContent = '×';
+            delBtn.onclick = () => deleteTodo(index);
+
+            msgDiv.appendChild(textSpan);
+            msgDiv.appendChild(delBtn);
+            todoMessages.appendChild(msgDiv);
+            todoMessages.scrollTop = todoMessages.scrollHeight;
+        });
+    }
+
+    todoInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter' && todoInput.value.trim() !== '') {
+            addTodo(todoInput.value.trim());
+            todoInput.value = '';
+        }
+    });
+
+    passwordInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter') {
+            if (passwordInput.value.trim() === accessCode) {
+                todoMessages.style.display = 'flex';
+                todoInput.style.display = 'block';
+                passwordInput.style.display = 'none';
+            } else {
+                passwordInput.classList.remove('blink-red');
+                void passwordInput.offsetWidth; 
+                passwordInput.classList.add('blink-red');
+            }
+        }
+    });
+
+    function addTodo(text) {
+        db.ref('todos').once('value').then(snapshot => {
+            const todos = snapshot.val() || [];
+            todos.push(text);
+            db.ref('todos').set(todos);
+        });
+    }
+
+    function deleteTodo(index) {
+        if (confirm('Are you sure you want to permanently delete this task ?')) {
+            db.ref('todos').once('value').then(snapshot => {
+                const todos = snapshot.val() || [];
+                todos.splice(index, 1);
+                db.ref('todos').set(todos);
+            });
+        }
+    }
+
+    function showCopied() {
+        copiedInfo.classList.add('show');
+        setTimeout(() => copiedInfo.classList.remove('show'), 1000);
+    }
+    
+    function updateClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+
+    const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const day = weekdays[now.getDay()];
+    const date = now.getDate();
+    const month = months[now.getMonth()];
+    const year = now.getFullYear();
+    document.getElementById('date').textContent = `${day} ${date} ${month} ${year}`;
+
+    // Countdown to the end of the year
+    const endOfYear = new Date(now.getFullYear() + 1, 0, 1);
+    const msLeft = endOfYear - now;
+    const days = Math.floor(msLeft / (1000 * 60 * 60 * 24));
+    const hoursLeft = Math.floor((msLeft / (1000 * 60 * 60)) % 24);
+    const mins = Math.floor((msLeft / (1000 * 60)) % 60);
+    const secs = Math.floor((msLeft / 1000) % 60);
+
+    // Update the countdown text inside the progress bar
+    document.getElementById('countdown-text').textContent = `${days}d ${hoursLeft}h ${mins}m ${secs}s`;
+
+    // Calculate the progress bar width for the countdown to the end of the year
+    const totalMsInYear = (new Date(now.getFullYear() + 1, 0, 1) - new Date(now.getFullYear(), 0, 1));
+    const progressPercentage = (1 - (msLeft / totalMsInYear)) * 100;
+
+    // Update the progress bar
+    document.getElementById('progress-countdown').children[0].style.width = `${progressPercentage}%`;
+
+    // Countdown to the end of the month
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const msLeftMonth = endOfMonth - now;
+    const daysM = Math.floor(msLeftMonth / (1000 * 60 * 60 * 24));
+    const hoursM = Math.floor((msLeftMonth / (1000 * 60 * 60)) % 24);
+    const minsM = Math.floor((msLeftMonth / (1000 * 60)) % 60);
+    const secsM = Math.floor((msLeftMonth / 1000) % 60);
+
+    // Update the countdown-month text inside the progress bar
+    document.getElementById('countdown-month-text').textContent = `${daysM}d ${hoursM}h ${minsM}m ${secsM}s`;
+
+    // Calculate the progress bar width for the countdown to the end of the month
+    const totalMsInMonth = (new Date(now.getFullYear(), now.getMonth() + 1, 1) - new Date(now.getFullYear(), now.getMonth(), 1));
+    const progressPercentageMonth = (1 - (msLeftMonth / totalMsInMonth)) * 100;
+
+    // Update the progress bar
+    document.getElementById('progress-countdown-month').children[0].style.width = `${progressPercentageMonth}%`;
+    // Show Month and Year progress summary
+document.getElementById('progress-summary').textContent = `Year : ${progressPercentage.toFixed(0)}% | Month : ${progressPercentageMonth.toFixed(0)}%`;
+}
+
+
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+
+</body>
+</html>
