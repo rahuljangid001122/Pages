@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved</title>
+    <link rel="icon" type="image/png" href="/RJ/favicon.png">
+    <style>
+      :root {
+        --bg-color: #151515;
+        --fg-color: #f5f5f7;
+        --border-color: #3a3a3c;
+        --link-color: #0a84ff;
+        --link-hover: #409cff;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        color: var(--fg-color);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0;
+        padding: 5px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 5px;
+      }
+
+      @media (max-width: 600px) {
+        .grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .container-block {
+        min-width: 0;
+      }
+
+      .scroll-wrapper {
+        display: flex;
+        /* keep as flex so height works */
+        min-width: 0;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        height: 165px;
+        display: flex;
+      }
+
+      .scroll-container {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background-color: #000;
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        padding: 12px;
+      }
+
+      .scroll-container::-webkit-scrollbar {
+        width: 0.5px;
+        height: 0.5px;
+      }
+
+      .scroll-container::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 3px;
+      }
+
+      .link-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .link-list li {
+        display: flex;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border-color);
+        min-width: 0;
+      }
+
+      .link-list li:last-child {
+        border-bottom: none;
+      }
+
+      .link-list img {
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
+        border-radius: 4px;
+        flex: 0 0 auto;
+      }
+
+      .link-list a {
+        text-decoration: none;
+        color: var(--link-color);
+        font-size: 15px;
+        flex: 1 1 auto;
+        min-width: 0;
+        /* <--- important */
+        display: inline-block;
+        white-space: nowrap;
+      }
+
+      .link-list a:hover {
+        color: var(--link-hover);
+      }
+
+      .container-title {
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--fg-color);
+        opacity: 0.8;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      .container-description {
+        font-size: 13px;
+        color: var(--fg-color);
+        opacity: 0.7;
+        margin-bottom: 8px;
+        text-align: center;
+        /* or left if you prefer */
+      }
+
+      .separator {
+        font-size: 9px;
+        color: cyan;
+        /* align with theme */
+        padding: 6px 0 0 0;
+        pointer-events: none;
+        /* non-clickable */
+        display: block;
+        /* ensures it behaves like text inside li */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid">
+      <!-- 👉 Container 1 👈-->
+      <div class="container-block">
+        <div class="scroll-wrapper">
+          <div class="scroll-container">
+            <div class="container-description">Most visited.</div>
+            <ul class="link-list">
+              <li>
+                <img>
+                <a href="https://m.youtube.com/@Career247Official/videos">Prashant Dhawan</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/@StudyIQEducationLtd/videos">Ankit Agrawal</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/channel/UCrC8mOqJQpoB7NuIMKIS6rQ/search?query=Tyagi">Shashank Tyagi</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/DrSJaishankar">S. Jaishankar</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/RajCMO">CM Rajasthan</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/mufaddal_vohra">Mufaddal Vohra</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/MEAIndia">MEA Spokesperson</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/realDonaldTrump">Donald Trump</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/narendramodi">Narendra Modi</a>
+              </li>
+              <span class="separator">Journalists:</span>
+              <li>
+                <img>
+                <a href="https://x.com/smitaprakash">Smita Prakash</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/ShivAroor">Shiv Aroor</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/AdityaRajKaul">Aditya Raj Kaul</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/sidhant">Siddhant Sibal</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="container-title">Favorites</div>
+      </div>
+      <!-- 👉 Container 2 👈-->
+      <div class="container-block">
+        <div class="scroll-wrapper">
+          <div class="scroll-container">
+            <div class="container-description">Youtube channels.</div>
+            <ul class="link-list">
+              <li>
+                <img>
+                <a href="https://m.youtube.com/@NitishRajput/videos">Nitish Rajput</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/@dhruvrathee/videos">Dhruv Rathee</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="container-title">Youtube</div>
+      </div>
+      <!-- 👉 Container 3 👈-->
+      <div class="container-block">
+        <div class="scroll-wrapper">
+          <div class="scroll-container">
+            <div class="container-description">Twitter handles.</div>
+            <ul class="link-list">
+              <li>
+                <img>
+                <a href="https://x.com/MedvedevRussiaE">Dmitry Medvedev</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/MrSinha_">Mr. Sinha</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/PIB_India">PIB Factcheck</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/dhruv_rathee">Dhruv Rathee</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/SushantBSinha">Sushant Sinha</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://x.com/rishibagree">Rishi Bagree</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="container-title">Twitter</div>
+      </div>
+      <!-- 👉 Container 4 👈-->
+      <div class="container-block">
+        <div class="scroll-wrapper">
+          <div class="scroll-container">
+            <div class="container-description">D. Pharma websites and resources.</div>
+            <ul class="link-list">
+              <li>
+                <img>
+                <a href="https://www.pci.nic.in/">Pharmacy Council of India</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/@avrendrasingh/videos">AV Chemistry Classes</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/@pharmacyindialive6732/videos">Pharmacy India Live</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://noteskarts.com/d-pharma-notes-d-pharma-1st-and-2nd-year-notes-pdf-by-noteskarts/">Noteskarts</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://web.telegram.org/k/#@PharmacyDiscussionCenter">Pharmacy Discussion</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/@gloriouskrishan/videos">Mind Nurture</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="container-title">D. Pharm</div>
+      </div>
+      <!-- 👉 Container 5 👈-->
+      <div class="container-block">
+        <div class="scroll-wrapper">
+          <div class="scroll-container">
+            <div class="container-description">Bhabhiji ghar par hai show episodes.</div>
+            <ul class="link-list">
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=MXFRNzxu8Zs&pp=ygUDODY2">Kaamwalibai.com (866)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=gQ2btRjJcbo&pp=ygUDODcx">Jail Break (871)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=FbxkwwwX-hQ&pp=ygUIQmdwaCA4Nzg%3D">Woh Kaun Hai (878)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=1rCfVo8h9Ts">Hotline (882)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=etl0SwGI-9Y&pp=0gcJCa0JAYcqIYzv">Paisa Hai Paisa (900)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=eb8RbdcPaUQ">Badnam Restaurant (902)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=ifpGJar3y60&list=PLC_Om0TfCA1TUDuOZ33f_y8xEhBIrbOlO&index=1&pp=iAQB">Income Tax Ki Dhaad (1202)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=OCF1loxPQUY&list=PLC_Om0TfCA1TUDuOZ33f_y8xEhBIrbOlO&index=5&pp=iAQB">Dhagabaaz Bhauji (1206)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=z8KTaDnBjOU&pp=ygUJQmdwaCAxMjEy">Bumper Diwali (1212)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=RBIx7PrPDU4&pp=ygUJQmdwaCAxMjE3">Prem Gone (1217)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=sjMk_ZoSzsU&pp=ygUJQmdwaCAxMjIx">Chhatt Pooja (1221)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=mENZ_NT8-BM&pp=ygUEMTIyMtIHCQmtCQGHKiGM7w%3D%3D">Majdoor Union Zindabad (1222)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=4YDln70Jy7c&list=PLC_Om0TfCA1TUDuOZ33f_y8xEhBIrbOlO&index=16&pp=iAQB">Ghatotkacha (1227)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=FfbDeymCc4I&pp=ygUEMTIzMg%3D%3D">Bhavishyavani (1232)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=0gAxoqSpnd4&list=PLC_Om0TfCA1TUDuOZ33f_y8xEhBIrbOlO&index=23&pp=iAQB">Hadtaal (1236)</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://m.youtube.com/watch?v=7HjkaBmBe6c&pp=ygUEMTIzNw%3D%3D">Anita Ki Angoothi (1237)</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <
+        </div>
+        <div class="container-title">BGPH</div>
+      </div>
+      <!-- 👉 Container 6 👈-->
+      <div class="container-block">
+        <div class="scroll-wrapper">
+          <div class="scroll-container">
+            <div class="container-description">This container shows your favorite links.</div>
+            <ul class="link-list">
+              <li>
+                <img>
+                <a href="https://news.google.com/home/sections/CAQiTkNCQVNOQW9JTDIwdk1ETm5aRFVTQldWdUxVZENHZ0pKVGlJT0NBUWFDZ29JTDIwdk1EVnFhR2NxRFFvTEVnbElaV0ZrYkdsdVpYTW9BQSouCAAqKggKIiRDQkFTRlFvSUwyMHZNRE5uWkRVU0JXVnVMVWRDR2dKSlRpZ0FQAVAB?hl=en-IN&gl=IN&ceid=IN:en">Google News</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://www.bbc.com/news/world?page=2">BBC</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://timesofindia.indiatimes.com/">TOI</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://www.aajtak.in/">Aaj Tak</a>
+              </li>
+              <li>
+                <img>
+                <a href="https://edition.cnn.com/world">CNN</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="container-title">Mainstream</div>
+      </div>
+      <!-- 👉 Container 7 👈-->
+      <div class="container-block">
+        <div class="scroll-wrapper">
+          <div class="scroll-container">
+            <div class="container-description">This container shows your favorite links.</div>
+            <ul class="link-list">
+              <li>
+                <img>
+                <a href="https://x.com/sidhant">Siddhant Sibal</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="container-title">Sites</div>
+      </div>
+      <!-- 👉 Container 8 👈-->
+      <div class="container-block">
+        <div class="scroll-wrapper">
+          <div class="scroll-container">
+            <div class="container-description">This container shows your favorite links.</div>
+            <ul class="link-list">
+              <li>
+                <img>
+                <a href="https://x.com/sidhant">Siddhant Sibal</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="container-title">Sites</div>
+      </div>
+      <!-- 👉 Container 9 👈-->
+      <div class="container-block">
+        <div class="scroll-wrapper">
+          <div class="scroll-container">
+            <div class="container-description">This container shows your favorite links.</div>
+            <ul class="link-list">
+              <li>
+                <img>
+                <a href="https://x.com/sidhant">Siddhant Sibal</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="container-title">Sites</div>
+      </div>
+    </div>
+    <script>
+      // 👉 Add favicons as before
+      document.querySelectorAll('.link-list li').forEach(li => {
+        const link = li.querySelector('a').href;
+        const domain = new URL(link).hostname;
+        const faviconUrl = `https://www.google.com/s2/favicons?sz=16&domain=${domain}`;
+        li.querySelector('img').src = faviconUrl;
+      });
+      // 👉 Spaces at end
+      document.querySelectorAll('.link-list a').forEach(a => {
+        a.innerHTML += '&nbsp;&nbsp;&nbsp;';
+      });
+      // 👉 New tab link
+      document.querySelectorAll('.link-list a').forEach(a => {
+        a.setAttribute('target', '_blank');
+      });
+      // 👉 Prepend numbering span before each link text
+      document.querySelectorAll('.link-list').forEach(list => {
+        list.querySelectorAll('li').forEach((li, index) => {
+          const a = li.querySelector('a');
+          const numberSpan = document.createElement('span');
+          numberSpan.textContent = (index + 1).toString().padStart(2, '0') + '. ';
+          a.prepend(numberSpan);
+        });
+      });
+    </script>
+  </body>
+</html>
+
