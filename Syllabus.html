@@ -62,6 +62,7 @@
     </table>
   </div>
 
+
 <script>
   // --- Firebase Config ---
   const firebaseConfig = {
@@ -131,10 +132,12 @@
     });
 
     btn.addEventListener('click', ()=>{
-      const cur = Number(btn.dataset.state)||0;
-      const newState = (cur+1) % 4;
-      applyState(btn, newState);
-      ref.set(newState);
+      if(confirm(`Change progress for ${subj} - Chapter ${chap}?`)){
+        const cur = Number(btn.dataset.state)||0;
+        const newState = (cur+1) % 4;
+        applyState(btn, newState);
+        ref.set(newState);
+      }
     });
 
     td.appendChild(btn);
@@ -157,5 +160,6 @@
 
   buildTable();
 </script>
+
 </body>
 </html>
