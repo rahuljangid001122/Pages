@@ -47,18 +47,19 @@
       .popup-inner {
         max-width: 90vw;
         max-height: 90vh;
-        overflow: hidden;
-        position: relative;
       }
 
       #popupImg {
         width: auto;
         height: auto;
-        max-width: none;
-        max-height: none;
-        transform-origin: 0 0;
-        transition: transform 0.2s ease;
+        max-width: 90vw;
+        max-height: 90vh;
         display: block;
+        transition: transform 220ms ease;
+        transform-origin: center center;
+        transform: scale(1);
+        touch-action: none;
+        user-select: none;
       }
 
       .close-btn {
@@ -70,7 +71,6 @@
         border: none;
         color: white;
         cursor: pointer;
-        z-index: 2;
       }
 
       #lockscreen {
@@ -106,6 +106,7 @@
     </style>
   </head>
   <body>
+    <!-- PASSCODE OVERLAY -->
     <div id="lockscreen">
       <input id="passInput" type="password" placeholder="Enter Passcode" />
       <p id="errMsg">Incorrect passcode</p>
@@ -138,33 +139,48 @@
         const popup = document.getElementById('popup');
         const popupImg = document.getElementById('popupImg');
         const closeBtn = document.getElementById('closeBtn');
+        let isZoomed = false;
+        const ZOOM_SCALE = 2.5;
 
         function openPreview(src, alt) {
           popupImg.src = src;
           popupImg.alt = alt || 'Preview';
-          resetZoom();
+          popupImg.style.transform = 'scale(1)';
+          popupImg.style.transformOrigin = 'center center';
           popup.classList.add('show');
           popup.setAttribute('aria-hidden', 'false');
           closeBtn.focus();
+          isZoomed = false;
         }
 
         function closePreview() {
           popup.classList.remove('show');
           popup.setAttribute('aria-hidden', 'true');
-          popupImg.src = '';
+          // Wait for fade-out (250ms) THEN reset zoom
+          setTimeout(() => {
+            popupImg.src = '';
+            popupImg.style.transform = 'scale(1)';
+            popupImg.style.transformOrigin = 'center center';
+            isZoomed = false;
+          }, 260);
         }
-        grid.addEventListener('click', e => {
-          if (e.target.tagName === 'IMG') openPreview(e.target.src, e.target.alt);
+        grid.addEventListener('click', (e) => {
+          const target = e.target;
+          if (target && target.tagName === 'IMG') openPreview(target.src, target.alt);
         });
-        grid.addEventListener('keydown', e => {
-          if (e.target.tagName === 'IMG' && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            openPreview(e.target.src, e.target.alt);
+        grid.addEventListener('keydown', (e) => {
+          const target = e.target;
+          if (target && target.tagName === 'IMG') {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openPreview(target.src, target.alt);
+            }
           }
         });
         popup.addEventListener('click', e => {
           if (e.target === popup) closePreview();
         });
+        popupImg.addEventListener('click', e => e.stopPropagation());
         closeBtn.addEventListener('click', e => {
           e.stopPropagation();
           closePreview();
@@ -172,43 +188,60 @@
         document.addEventListener('keydown', e => {
           if (e.key === 'Escape' && popup.classList.contains('show')) closePreview();
         });
-        // ===== DOUBLE TAP ZOOM =====
-        let lastTap = 0;
-        let zoomed = false;
-        let scale = 1;
-        let offsetX = 0;
-        let offsetY = 0;
-
-        function resetZoom() {
-          zoomed = false;
-          scale = 1;
-          offsetX = 0;
-          offsetY = 0;
-          popupImg.style.transform = 'translate(0px,0px) scale(1)';
-        }
-        popupImg.addEventListener('touchend', function(e) {
-          const currentTime = new Date().getTime();
-          const tapGap = currentTime - lastTap;
-          lastTap = currentTime;
-          if (tapGap < 250) {
-            const rect = popupImg.getBoundingClientRect();
-            const touch = e.changedTouches[0];
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
-            if (!zoomed) {
-              scale = 2.2;
-              offsetX = -(x * (scale - 1));
-              offsetY = -(y * (scale - 1));
-              zoomed = true;
-            } else {
-              resetZoom();
-              return;
-            }
-            popupImg.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
-          }
+        // ----------- Smooth Double Tap / Double Click Zoom --------------
+        popupImg.addEventListener('dblclick', e => {
+          e.preventDefault();
+          handlePointerZoom(e.clientX, e.clientY);
         });
+        (function() {
+          let lastTap = 0,
+            lastX = 0,
+            lastY = 0;
+          const DOUBLE_TAP_DELAY = 300;
+          const MAX_DIST = 50;
+          popupImg.addEventListener('touchend', function(ev) {
+            if (ev.changedTouches.length === 0) return;
+            const t = ev.changedTouches[0];
+            const now = Date.now();
+            const dt = now - lastTap;
+            const dist = Math.hypot(t.clientX - lastX, t.clientY - lastY);
+            if (dt > 0 && dt <= DOUBLE_TAP_DELAY && dist <= MAX_DIST) {
+              ev.preventDefault();
+              handlePointerZoom(t.clientX, t.clientY);
+              lastTap = 0;
+            } else {
+              lastTap = now;
+              lastX = t.clientX;
+              lastY = t.clientY;
+            }
+          }, {
+            passive: false
+          });
+        })();
+
+        function handlePointerZoom(clientX, clientY) {
+          if (!popup.classList.contains('show') || !popupImg.src) return;
+          const rect = popupImg.getBoundingClientRect();
+          const x = Math.max(rect.left, Math.min(clientX, rect.right));
+          const y = Math.max(rect.top, Math.min(clientY, rect.bottom));
+          const percentX = ((x - rect.left) / rect.width) * 100;
+          const percentY = ((y - rect.top) / rect.height) * 100;
+          if (!isZoomed) {
+            popupImg.style.transformOrigin = `${percentX}% ${percentY}%`;
+            requestAnimationFrame(() => popupImg.style.transform = `scale(${ZOOM_SCALE})`);
+            isZoomed = true;
+          } else {
+            popupImg.style.transform = 'scale(1)';
+            popupImg.addEventListener('transitionend', function resetOrigin(e) {
+              if (e.propertyName === 'transform') {
+                popupImg.style.transformOrigin = 'center center';
+                popupImg.removeEventListener('transitionend', resetOrigin);
+              }
+            });
+            isZoomed = false;
+          }
+        }
       })();
-      // PASSCODE
       const lockscreen = document.getElementById('lockscreen');
       const passInput = document.getElementById('passInput');
       const errMsg = document.getElementById('errMsg');
