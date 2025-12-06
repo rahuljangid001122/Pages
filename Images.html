@@ -141,6 +141,12 @@
         const closeBtn = document.getElementById('closeBtn');
         let isZoomed = false;
         const ZOOM_SCALE = 2.5;
+        // Drag variables
+        let isDragging = false;
+        let currentX = 0;
+        let currentY = 0;
+        let lastPointerX = 0;
+        let lastPointerY = 0;
 
         function openPreview(src, alt) {
           popupImg.src = src;
@@ -151,17 +157,20 @@
           popup.setAttribute('aria-hidden', 'false');
           closeBtn.focus();
           isZoomed = false;
+          currentX = 0;
+          currentY = 0;
         }
 
         function closePreview() {
           popup.classList.remove('show');
           popup.setAttribute('aria-hidden', 'true');
-          // Wait for fade-out (250ms) THEN reset zoom
           setTimeout(() => {
             popupImg.src = '';
             popupImg.style.transform = 'scale(1)';
             popupImg.style.transformOrigin = 'center center';
             isZoomed = false;
+            currentX = 0;
+            currentY = 0;
           }, 260);
         }
         grid.addEventListener('click', (e) => {
@@ -188,7 +197,7 @@
         document.addEventListener('keydown', e => {
           if (e.key === 'Escape' && popup.classList.contains('show')) closePreview();
         });
-        // ----------- Smooth Double Tap / Double Click Zoom --------------
+        // ----------- Double Tap / Double Click Zoom --------------
         popupImg.addEventListener('dblclick', e => {
           e.preventDefault();
           handlePointerZoom(e.clientX, e.clientY);
@@ -228,10 +237,14 @@
           const percentY = ((y - rect.top) / rect.height) * 100;
           if (!isZoomed) {
             popupImg.style.transformOrigin = `${percentX}% ${percentY}%`;
-            requestAnimationFrame(() => popupImg.style.transform = `scale(${ZOOM_SCALE})`);
+            requestAnimationFrame(() => popupImg.style.transform = `scale(${ZOOM_SCALE}) translate(0px, 0px)`);
             isZoomed = true;
+            currentX = 0;
+            currentY = 0;
           } else {
             popupImg.style.transform = 'scale(1)';
+            currentX = 0;
+            currentY = 0;
             popupImg.addEventListener('transitionend', function resetOrigin(e) {
               if (e.propertyName === 'transform') {
                 popupImg.style.transformOrigin = 'center center';
@@ -241,6 +254,32 @@
             isZoomed = false;
           }
         }
+        // ----------- Drag-to-Pan Using Pointer Delta -----------------
+        popupImg.addEventListener('pointerdown', e => {
+          if (!isZoomed) return;
+          isDragging = true;
+          popupImg.setPointerCapture(e.pointerId);
+          lastPointerX = e.clientX;
+          lastPointerY = e.clientY;
+        });
+        popupImg.addEventListener('pointermove', e => {
+          if (!isDragging || !isZoomed) return;
+          const deltaX = e.clientX - lastPointerX;
+          const deltaY = e.clientY - lastPointerY;
+          currentX += deltaX;
+          currentY += deltaY;
+          // Translate compensating for scale
+          popupImg.style.transform = `scale(${ZOOM_SCALE}) translate(${currentX / ZOOM_SCALE}px, ${currentY / ZOOM_SCALE}px)`;
+          lastPointerX = e.clientX;
+          lastPointerY = e.clientY;
+        });
+        popupImg.addEventListener('pointerup', e => {
+          isDragging = false;
+          popupImg.releasePointerCapture(e.pointerId);
+        });
+        popupImg.addEventListener('pointercancel', () => {
+          isDragging = false;
+        });
       })();
       const lockscreen = document.getElementById('lockscreen');
       const passInput = document.getElementById('passInput');
