@@ -48,16 +48,17 @@
         max-width: 90vw;
         max-height: 90vh;
         overflow: hidden;
+        position: relative;
       }
 
       #popupImg {
         width: auto;
         height: auto;
-        max-width: 90vw;
-        max-height: 90vh;
+        max-width: none;
+        max-height: none;
+        transform-origin: 0 0;
+        transition: transform 0.2s ease;
         display: block;
-        transform-origin: center center;
-        transition: transform 0.25s ease;
       }
 
       .close-btn {
@@ -69,6 +70,7 @@
         border: none;
         color: white;
         cursor: pointer;
+        z-index: 2;
       }
 
       #lockscreen {
@@ -140,6 +142,7 @@
         function openPreview(src, alt) {
           popupImg.src = src;
           popupImg.alt = alt || 'Preview';
+          resetZoom();
           popup.classList.add('show');
           popup.setAttribute('aria-hidden', 'false');
           closeBtn.focus();
@@ -149,23 +152,19 @@
           popup.classList.remove('show');
           popup.setAttribute('aria-hidden', 'true');
           popupImg.src = '';
-          resetZoom();
         }
-        grid.addEventListener('click', (e) => {
-          if (e.target && e.target.tagName === 'IMG') openPreview(e.target.src, e.target.alt);
+        grid.addEventListener('click', e => {
+          if (e.target.tagName === 'IMG') openPreview(e.target.src, e.target.alt);
         });
-        grid.addEventListener('keydown', (e) => {
-          if (e.target && e.target.tagName === 'IMG') {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              openPreview(e.target.src, e.target.alt);
-            }
+        grid.addEventListener('keydown', e => {
+          if (e.target.tagName === 'IMG' && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            openPreview(e.target.src, e.target.alt);
           }
         });
         popup.addEventListener('click', e => {
           if (e.target === popup) closePreview();
         });
-        popupImg.addEventListener('click', e => e.stopPropagation());
         closeBtn.addEventListener('click', e => {
           e.stopPropagation();
           closePreview();
@@ -173,25 +172,43 @@
         document.addEventListener('keydown', e => {
           if (e.key === 'Escape' && popup.classList.contains('show')) closePreview();
         });
-        // --- DOUBLE TAP ZOOM (ENTIRE POPUP)
+        // ===== DOUBLE TAP ZOOM =====
         let lastTap = 0;
         let zoomed = false;
+        let scale = 1;
+        let offsetX = 0;
+        let offsetY = 0;
 
         function resetZoom() {
           zoomed = false;
-          popup.style.transform = 'scale(1)';
-          popup.style.transition = 'transform 0.25s ease';
+          scale = 1;
+          offsetX = 0;
+          offsetY = 0;
+          popupImg.style.transform = 'translate(0px,0px) scale(1)';
         }
-        popup.addEventListener('touchend', function(e) {
+        popupImg.addEventListener('touchend', function(e) {
           const currentTime = new Date().getTime();
-          const tapLength = currentTime - lastTap;
-          if (tapLength < 300 && tapLength > 0) {
-            zoomed = !zoomed;
-            popup.style.transform = zoomed ? 'scale(2)' : 'scale(1)';
-          }
+          const tapGap = currentTime - lastTap;
           lastTap = currentTime;
+          if (tapGap < 250) {
+            const rect = popupImg.getBoundingClientRect();
+            const touch = e.changedTouches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            if (!zoomed) {
+              scale = 2.2;
+              offsetX = -(x * (scale - 1));
+              offsetY = -(y * (scale - 1));
+              zoomed = true;
+            } else {
+              resetZoom();
+              return;
+            }
+            popupImg.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+          }
         });
       })();
+      // PASSCODE
       const lockscreen = document.getElementById('lockscreen');
       const passInput = document.getElementById('passInput');
       const errMsg = document.getElementById('errMsg');
