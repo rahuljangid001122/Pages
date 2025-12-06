@@ -47,6 +47,7 @@
       .popup-inner {
         max-width: 90vw;
         max-height: 90vh;
+        overflow: hidden;
       }
 
       #popupImg {
@@ -55,6 +56,8 @@
         max-width: 90vw;
         max-height: 90vh;
         display: block;
+        transform-origin: center center;
+        transition: transform 0.25s ease;
       }
 
       .close-btn {
@@ -101,15 +104,12 @@
     </style>
   </head>
   <body>
-    <!-- PASSCODE OVERLAY -->
     <div id="lockscreen">
       <input id="passInput" type="password" placeholder="Enter Passcode" />
       <p id="errMsg">Incorrect passcode</p>
     </div>
     <main>
-      <div class="grid" id="grid">
-        <!-- Images are generated automatically by script below -->
-      </div>
+      <div class="grid" id="grid"></div>
       <div class="popup" id="popup" aria-hidden="true">
         <div class="popup-inner" role="dialog" aria-modal="true" aria-label="Image preview">
           <button class="close-btn" id="closeBtn" aria-label="Close preview">✕</button>
@@ -118,36 +118,21 @@
       </div>
     </main>
     <script>
-      /*
-    Configuration:
-    - totalCount: how many images you want to generate
-    - srcPrefix / srcSuffix: build the filename
-    - startIndex: the numeric index used in the existing filenames (1101..1115 in your original)
-    - srcIndexPad: how many digits to pad the index used in the filename (if any)
-    - altPad: digits to pad the alt attribute (you asked for 001 style)
-
-    For your original file names ("/Pages/doc1101.jpg" ... "doc1115.jpg") we reproduce that by
-    using startIndex = 1101 and incrementing by 1. The alt text will be padded to 3 digits (001..015).
-  */
       (function() {
         const grid = document.getElementById('grid');
-        // ---- EDIT THESE VALUES IF YOU WANT A DIFFERENT RANGE ----
-        const totalCount = 21; // number of images to show
-        const startIndex = 1101; // first file's numeric part (1101 -> doc1101.jpg)
-        const srcBase = '/Pages/doc'; // base + numeric + ext
+        const totalCount = 21;
+        const startIndex = 1101;
+        const srcBase = '/Pages/doc';
         const srcExt = '.jpg';
-        const altPad = 3; // alt: 001, 002, ...
-        // ---------------------------------------------------------
-        // generate image elements
+        const altPad = 3;
         for (let i = 0; i < totalCount; i++) {
-          const fileNum = startIndex + i; // 1101, 1102, ...
+          const fileNum = startIndex + i;
           const img = document.createElement('img');
           img.src = `${srcBase}${fileNum}${srcExt}`;
-          img.alt = String(i + 1).padStart(altPad, '0'); // 001, 002, ...
+          img.alt = String(i + 1).padStart(altPad, '0');
           img.tabIndex = 0;
           grid.appendChild(img);
         }
-        // Popup & preview logic (keeps same behavior as original)
         const popup = document.getElementById('popup');
         const popupImg = document.getElementById('popupImg');
         const closeBtn = document.getElementById('closeBtn');
@@ -164,18 +149,16 @@
           popup.classList.remove('show');
           popup.setAttribute('aria-hidden', 'true');
           popupImg.src = '';
+          resetZoom();
         }
-        // delegate events from grid to avoid re-querying every image individually
         grid.addEventListener('click', (e) => {
-          const target = e.target;
-          if (target && target.tagName === 'IMG') openPreview(target.src, target.alt);
+          if (e.target && e.target.tagName === 'IMG') openPreview(e.target.src, e.target.alt);
         });
         grid.addEventListener('keydown', (e) => {
-          const target = e.target;
-          if (target && target.tagName === 'IMG') {
+          if (e.target && e.target.tagName === 'IMG') {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              openPreview(target.src, target.alt);
+              openPreview(e.target.src, e.target.alt);
             }
           }
         });
@@ -190,8 +173,24 @@
         document.addEventListener('keydown', e => {
           if (e.key === 'Escape' && popup.classList.contains('show')) closePreview();
         });
+        // --- DOUBLE TAP ZOOM ---
+        let lastTap = 0;
+        let zoomed = false;
+
+        function resetZoom() {
+          zoomed = false;
+          popupImg.style.transform = 'scale(1)';
+        }
+        popupImg.addEventListener('touchend', function(e) {
+          const currentTime = new Date().getTime();
+          const tapLength = currentTime - lastTap;
+          if (tapLength < 300 && tapLength > 0) {
+            zoomed = !zoomed;
+            popupImg.style.transform = zoomed ? 'scale(2)' : 'scale(1)';
+          }
+          lastTap = currentTime;
+        });
       })();
-      // PASSCODE LOGIC (unchanged)
       const lockscreen = document.getElementById('lockscreen');
       const passInput = document.getElementById('passInput');
       const errMsg = document.getElementById('errMsg');
@@ -209,4 +208,4 @@
       });
     </script>
   </body>
-  </html>
+</html>
