@@ -1,169 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Photo Grid — Preview Popup</title>
-  <style>
-    body{
-      margin:0;
-      padding:0;
-      background-color:#1c1c1e;
-      color:#fff;
-      font-family:-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:0;
-    }
-    .grid img{
-      width:100%;
-      aspect-ratio:1/1;
-      object-fit:cover;
-      display:block;
-    }
-    .popup{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.9);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .25s ease;
-      z-index:99999;
-    }
-    .popup.show{
-      opacity:1;
-      pointer-events:auto;
-    }
-    .popup-inner{
-      max-width:90vw;
-      max-height:90vh;
-    }
-    #popupImg{
-      width:auto;
-      height:auto;
-      max-width:90vw;
-      max-height:90vh;
-      display:block;
-    }
-    .close-btn{
-      position:absolute;
-      top:20px;
-      right:20px;
-      font-size:28px;
-      background:none;
-      border:none;
-      color:white;
-      cursor:pointer;
-    }
-    #lockscreen{
-      position:fixed;
-      inset:0;
-      background:#000;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:100000;
-      flex-direction:column;
-      color:#fff;
-      font-family:-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
-    #passInput{
-      padding:10px 15px;
-      font-size:18px;
-      border:0;
-      border-radius:6px;
-      outline:none;
-      text-align:center;
-      caret-color:transparent;
-      background:#2c2c2e;
-      color:#fff;
-    }
-    #errMsg{color:#ff3b30;margin-top:10px;display:none;}
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Grid</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #1c1c1e;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      }
 
-<!-- PASSCODE OVERLAY -->
-<div id="lockscreen">
-  <input id="passInput" type="password" placeholder="Enter Passcode" />
-  <p id="errMsg">Incorrect passcode</p>
-</div>
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0;
+      }
 
-<main>
-  <div class="grid" id="grid">
-    <img src="/Pages/doc1101.jpg" alt="💟" />
-    <img src="/Pages/doc1102.jpg" alt="💟" />
-    <img src="/Pages/doc1103.jpg" alt="💟" />
-    <img src="/Pages/doc1104.jpg" alt="💟" />
-    <img src="/Pages/doc1105.jpg" alt="💟" />
-    <img src="/Pages/doc1106.jpg" alt="💟" />
-    <img src="/Pages/doc1107.jpg" alt="💟" />
-    <img src="/Pages/doc1108.jpg" alt="💟" />
-    <img src="/Pages/doc1109.jpg" alt="💟" />
-    <img src="/Pages/doc1110.jpg" alt="💟" />
-    <img src="/Pages/doc1111.jpg" alt="💟" />
-    <img src="/Pages/doc1112.jpg" alt="💟" />
-    <img src="/Pages/doc1113.jpg" alt="💟" />
-    <img src="/Pages/doc1114.jpg" alt="💟" />
-    <img src="/Pages/doc1115.jpg" alt="💟" />
-  </div>
+      .grid img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        object-fit: cover;
+        display: block;
+      }
 
-  <div class="popup" id="popup" aria-hidden="true">
-    <div class="popup-inner" role="dialog" aria-modal="true" aria-label="Image preview">
-      <button class="close-btn" id="closeBtn" aria-label="Close preview">✕</button>
-      <img id="popupImg" src="" alt="Preview" />
+      .popup {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .25s ease;
+        z-index: 99999;
+      }
+
+      .popup.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .popup-inner {
+        max-width: 90vw;
+        max-height: 90vh;
+      }
+
+      #popupImg {
+        width: auto;
+        height: auto;
+        max-width: 90vw;
+        max-height: 90vh;
+        display: block;
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 28px;
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+      }
+
+      #lockscreen {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100000;
+        flex-direction: column;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      }
+
+      #passInput {
+        padding: 10px 15px;
+        font-size: 18px;
+        border: 0;
+        border-radius: 6px;
+        outline: none;
+        text-align: center;
+        caret-color: transparent;
+        background: #2c2c2e;
+        color: #fff;
+      }
+
+      #errMsg {
+        color: #ff3b30;
+        margin-top: 10px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- PASSCODE OVERLAY -->
+    <div id="lockscreen">
+      <input id="passInput" type="password" placeholder="Enter Passcode" />
+      <p id="errMsg">Incorrect passcode</p>
     </div>
-  </div>
-</main>
+    <main>
+      <div class="grid" id="grid">
+        <!-- Images are generated automatically by script below -->
+      </div>
+      <div class="popup" id="popup" aria-hidden="true">
+        <div class="popup-inner" role="dialog" aria-modal="true" aria-label="Image preview">
+          <button class="close-btn" id="closeBtn" aria-label="Close preview">✕</button>
+          <img id="popupImg" src="" alt="Preview" />
+        </div>
+      </div>
+    </main>
+    <script>
+      /*
+    Configuration:
+    - totalCount: how many images you want to generate
+    - srcPrefix / srcSuffix: build the filename
+    - startIndex: the numeric index used in the existing filenames (1101..1115 in your original)
+    - srcIndexPad: how many digits to pad the index used in the filename (if any)
+    - altPad: digits to pad the alt attribute (you asked for 001 style)
 
-<script>
-  const popup = document.getElementById('popup');
-  const popupImg = document.getElementById('popupImg');
-  const closeBtn = document.getElementById('closeBtn');
-  const images = document.querySelectorAll('.grid img');
+    For your original file names ("/Pages/doc1101.jpg" ... "doc1115.jpg") we reproduce that by
+    using startIndex = 1101 and incrementing by 1. The alt text will be padded to 3 digits (001..015).
+  */
+      (function() {
+        const grid = document.getElementById('grid');
+        // ---- EDIT THESE VALUES IF YOU WANT A DIFFERENT RANGE ----
+        const totalCount = 21; // number of images to show
+        const startIndex = 1101; // first file's numeric part (1101 -> doc1101.jpg)
+        const srcBase = '/Pages/doc'; // base + numeric + ext
+        const srcExt = '.jpg';
+        const altPad = 3; // alt: 001, 002, ...
+        // ---------------------------------------------------------
+        // generate image elements
+        for (let i = 0; i < totalCount; i++) {
+          const fileNum = startIndex + i; // 1101, 1102, ...
+          const img = document.createElement('img');
+          img.src = `${srcBase}${fileNum}${srcExt}`;
+          img.alt = String(i + 1).padStart(altPad, '0'); // 001, 002, ...
+          img.tabIndex = 0;
+          grid.appendChild(img);
+        }
+        // Popup & preview logic (keeps same behavior as original)
+        const popup = document.getElementById('popup');
+        const popupImg = document.getElementById('popupImg');
+        const closeBtn = document.getElementById('closeBtn');
 
-  function openPreview(src, alt){
-    popupImg.src = src;
-    popupImg.alt = alt || 'Preview';
-    popup.classList.add('show');
-    popup.setAttribute('aria-hidden', 'false');
-    closeBtn.focus();
-  }
+        function openPreview(src, alt) {
+          popupImg.src = src;
+          popupImg.alt = alt || 'Preview';
+          popup.classList.add('show');
+          popup.setAttribute('aria-hidden', 'false');
+          closeBtn.focus();
+        }
 
-  function closePreview(){
-    popup.classList.remove('show');
-    popup.setAttribute('aria-hidden', 'true');
-    popupImg.src = '';
-  }
+        function closePreview() {
+          popup.classList.remove('show');
+          popup.setAttribute('aria-hidden', 'true');
+          popupImg.src = '';
+        }
+        // delegate events from grid to avoid re-querying every image individually
+        grid.addEventListener('click', (e) => {
+          const target = e.target;
+          if (target && target.tagName === 'IMG') openPreview(target.src, target.alt);
+        });
+        grid.addEventListener('keydown', (e) => {
+          const target = e.target;
+          if (target && target.tagName === 'IMG') {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openPreview(target.src, target.alt);
+            }
+          }
+        });
+        popup.addEventListener('click', e => {
+          if (e.target === popup) closePreview();
+        });
+        popupImg.addEventListener('click', e => e.stopPropagation());
+        closeBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          closePreview();
+        });
+        document.addEventListener('keydown', e => {
+          if (e.key === 'Escape' && popup.classList.contains('show')) closePreview();
+        });
+      })();
+      // PASSCODE LOGIC (unchanged)
+      const lockscreen = document.getElementById('lockscreen');
+      const passInput = document.getElementById('passInput');
+      const errMsg = document.getElementById('errMsg');
+      const PASSCODE = "687";
 
-  images.forEach(img => {
-    img.addEventListener('click', () => openPreview(img.src, img.alt));
-    img.tabIndex = 0;
-    img.addEventListener('keydown', e => {
-      if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPreview(img.src, img.alt); }
-    });
-  });
-
-  popup.addEventListener('click', e => { if (e.target === popup) closePreview(); });
-  popupImg.addEventListener('click', e => e.stopPropagation());
-  closeBtn.addEventListener('click', e => { e.stopPropagation(); closePreview(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && popup.classList.contains('show')) closePreview(); });
-
-  // PASSCODE LOGIC
-  const lockscreen = document.getElementById('lockscreen');
-  const passInput = document.getElementById('passInput');
-  const errMsg = document.getElementById('errMsg');
-  const PASSCODE = "687";
-  function unlock(){
-    if(passInput.value === PASSCODE){ lockscreen.style.display='none'; }
-    else{ errMsg.style.display='block'; }
-  }
-  passInput.addEventListener('keydown', e => { if(e.key==='Enter') unlock(); });
-</script>
-</body>
+      function unlock() {
+        if (passInput.value === PASSCODE) {
+          lockscreen.style.display = 'none';
+        } else {
+          errMsg.style.display = 'block';
+        }
+      }
+      passInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') unlock();
+      });
+    </script>
+  </body>
   </html>
