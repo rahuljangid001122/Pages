@@ -173,20 +173,21 @@
         document.addEventListener('keydown', e => {
           if (e.key === 'Escape' && popup.classList.contains('show')) closePreview();
         });
-        // --- DOUBLE TAP ZOOM ---
+        // --- DOUBLE TAP ZOOM (ENTIRE POPUP)
         let lastTap = 0;
         let zoomed = false;
 
         function resetZoom() {
           zoomed = false;
-          popupImg.style.transform = 'scale(1)';
+          popup.style.transform = 'scale(1)';
+          popup.style.transition = 'transform 0.25s ease';
         }
-        popupImg.addEventListener('touchend', function(e) {
+        popup.addEventListener('touchend', function(e) {
           const currentTime = new Date().getTime();
           const tapLength = currentTime - lastTap;
           if (tapLength < 300 && tapLength > 0) {
             zoomed = !zoomed;
-            popupImg.style.transform = zoomed ? 'scale(2)' : 'scale(1)';
+            popup.style.transform = zoomed ? 'scale(2)' : 'scale(1)';
           }
           lastTap = currentTime;
         });
