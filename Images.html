@@ -93,10 +93,6 @@
         color: #fff;
       }
 
-      input[type="password"] {
-        transition: none; /* Prevents visual glitches */
-      }
-
       #errMsg {
         color: #ff3b30;
         margin-top: 10px;
@@ -107,7 +103,7 @@
   <body>
     <!-- PASSCODE OVERLAY -->
     <div id="lockscreen">
-      <input id="passInput" type="password" placeholder="Enter Passcode" autocomplete="off" />
+      <input id="passInput" type="password" placeholder="Enter Passcode" autocomplete="off" style="-webkit-text-security: disc;" />
       <p id="errMsg">Incorrect passcode</p>
     </div>
 
