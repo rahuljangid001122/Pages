@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Bookmarks</title>
+<style>
+:root{
+  --card: rgba(255,255,255,0.05);
+  --accent:#0a84ff;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;height:100%;
+  background:#050506;color:#fff;
+  font-size:13px;font-weight:500;
+}
+.app{max-width:1000px;margin:30px auto;padding:20px;position:relative}
+
+.folder{
+  position:relative;
+  background:var(--card);
+  padding:12px 42px 12px 12px;
+  border-radius:14px;
+  display:flex;align-items:center;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+
+.folder-name{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  min-width:0;
+}
+
+.btn{
+  padding:4px 10px;border-radius:10px;
+  background:#111;border:1px solid rgba(255,255,255,.08);
+  color:#fff;font-size:12px;cursor:pointer
+}
+.btn.primary{background:var(--accent);border:none}
+
+.menu-wrap{
+  position:absolute;top:8px;right:8px;
+  width:26px;height:26px;
+}
+
+.menu-btn{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;border:none;color:#fff;
+  font-size:18px;cursor:pointer
+}
+
+.menu-panel{
+  position:absolute;right:0;
+  background:#0c0c0d;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:6px;
+  display:none;z-index:99;min-width:140px;
+}
+
+.menu-panel::before {
+  content:'';
+  position:absolute;
+  width:0;
+  height:0;
+  border-left:6px solid transparent;
+  border-right:6px solid transparent;
+  border-bottom:6px solid #0c0c0d; /* arrow pointing up by default */
+  top:-6px;
+  right:12px;
+}
+
+.menu-panel.arrow-down::before {
+  border-bottom:none;
+  border-top:6px solid #0c0c0d; /* arrow pointing down */
+  top:auto;
+  bottom:-6px;
+}
+
+.menu-panel button{
+  width:100%;text-align:left;padding:8px 10px;
+  background:none;border:none;color:#fff;
+  font-size:12px;border-radius:8px;cursor:pointer
+}
+.menu-panel button:hover{background:rgba(255,255,255,.06)}
+
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  display:flex;align-items:center;justify-content:center
+}
+.dialog{
+  width:90%;max-width:520px;background:#09090a;
+  border-radius:18px;padding:16px;
+  border:1px solid rgba(255,255,255,.06)
+}
+
+.link-item{
+  background:rgba(255,255,255,.035);
+  padding:12px 42px 12px 12px;border-radius:14px;
+  margin-bottom:6px;
+  position:relative;display:flex;
+  align-items:center;justify-content:space-between
+}
+
+.link-left{
+  display:flex;align-items:center;gap:10px;min-width:0;
+  cursor:pointer;
+}
+
+.favicon{
+  width:20px;height:20px;border-radius:5px;flex:0 0 20px
+}
+
+.clamp{
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+input{
+  width:100%;padding:11px;border-radius:14px;
+  background:black;color:white;font-size:13px;
+  border:1px solid rgba(255,255,255,.08);margin-bottom:10px
+}
+h3{margin:0 0 12px 0;font-size:15px;font-weight:600;cursor:pointer}
+
+#loadingOverlay{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:16px;font-weight:600;
+  pointer-events:none;
+}
+
+#linkList{
+  max-height:300px;overflow-y:auto;margin-top:12px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div id="loadingOverlay">Loading...</div>
+  <div id="folders"></div>
+</div>
+
+<div id="modal" class="modal" style="display:none">
+  <div id="dialog" class="dialog"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyA5iLF-J-WvNaYm63r8rDZU8_rtZsgwYng",
+  authDomain: "my-todo-2e111.firebaseapp.com",
+  databaseURL: "https://my-todo-2e111-default-rtdb.firebaseio.com",
+  projectId: "my-todo-2e111",
+  storageBucket: "my-todo-2e111.appspot.com",
+  messagingSenderId: "765517702108",
+  appId: "1:765517702108:web:2dfe7d6205040cfd2ea519"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const rootRef=db.ref('bookmarks');
+</script>
+
+<script>
+(()=>{
+let state={folders:[]};
+const foldersEl=document.getElementById('folders');
+const modal=document.getElementById('modal');
+const dialog=document.getElementById('dialog');
+const loadingOverlay=document.getElementById('loadingOverlay');
+
+rootRef.on('value',snap=>{
+  state=snap.val()||{folders:[]};
+  if(!state.folders)state.folders=[];
+  render();
+  loadingOverlay.style.display='none';
+});
+
+function save(){rootRef.set(state)}
+
+function bindMenu(el, acts){
+  const btn = el.querySelector('.menu-btn');
+  const panel = el.querySelector('.menu-panel');
+  if (!btn || !panel) return;
+
+  btn.onclick = e => {
+    e.stopPropagation();
+    document.querySelectorAll('.menu-panel').forEach(p => {
+      if(p!==panel) p.style.display='none';
+    });
+
+    const isOpen = panel.style.display==='block';
+
+    panel.style.display='block';
+    panel.style.visibility='hidden';
+
+    const rect = el.getBoundingClientRect();
+    const panelHeight = panel.offsetHeight;
+    const spaceBelow = window.innerHeight - rect.bottom;
+
+    if(spaceBelow < panelHeight + 10){
+      panel.style.top='auto';
+      panel.style.bottom='100%';
+      panel.classList.add('arrow-down');
+    } else {
+      panel.style.top='30px';
+      panel.style.bottom='auto';
+      panel.classList.remove('arrow-down');
+    }
+
+    panel.style.visibility='visible';
+    panel.style.display = isOpen ? 'none' : 'block';
+  };
+
+  Object.keys(acts).forEach(k=>{
+    const b = panel.querySelector(`[data-act="${k}"]`);
+    if(b) b.onclick = e=>{
+      e.stopPropagation();
+      panel.style.display='none';
+      acts[k]();
+    };
+  });
+}
+
+document.addEventListener('click',()=>{
+  document.querySelectorAll('.menu-panel').forEach(p=>p.style.display='none');
+});
+
+function render(){
+  foldersEl.innerHTML='';
+  state.folders.forEach((f,i)=>{
+    if(!f.links)f.links=[];
+    const row=document.createElement('div');
+    row.className='folder';
+    row.innerHTML=`
+      <div class="folder-name">
+        <span>📁</span>
+        <strong class="clamp folder-title">${esc(f.title)}</strong>
+      </div>
+      <div class="menu-wrap">
+        <button class="menu-btn">⋮</button>
+        <div class="menu-panel">
+          <button data-act="new">New Folder</button>
+          <button data-act="up">Move Up</button>
+          <button data-act="down">Move Down</button>
+          <button data-act="edit">Edit</button>
+          <button data-act="del">Delete</button>
+        </div>
+      </div>
+    `;
+
+    const titleEl=row.querySelector('.folder-title');
+    titleEl.onclick=()=>openLinks(f);
+
+    bindMenu(row,{
+      new:()=>folderModal(),
+      up:()=>{
+        if(i>0){[state.folders[i-1],state.folders[i]]=[state.folders[i],state.folders[i-1]]; save();}
+      },
+      down:()=>{
+        if(i<state.folders.length-1){[state.folders[i+1],state.folders[i]]=[state.folders[i],state.folders[i+1]]; save();}
+      },
+      edit:()=>folderModal(f),
+      del:()=>{
+        if(confirm('Delete folder?')){
+          state.folders=state.folders.filter(x=>x.id!==f.id);
+          save();
+        }
+      }
+    });
+
+    foldersEl.appendChild(row);
+  });
+}
+
+function openLinks(folder){
+  showModal(`
+    <h3 id="folderTitle" class="clamp">${esc(folder.title)}</h3>
+    <button id="addLink" class="btn primary">Add Link</button>
+    <div id="linkList"></div>
+    <div style="text-align:right;margin-top:12px">
+      <button onclick="hideModal()" class="btn">Close</button>
+    </div>
+  `);
+
+  const titleEl = document.getElementById('folderTitle');
+  let expanded=false;
+  titleEl.onclick=()=>{
+    expanded=!expanded;
+    titleEl.className = expanded?'':'clamp';
+    titleEl.textContent = folder.title;
+  };
+
+  document.getElementById('addLink').onclick = ()=>linkModal(folder,null);
+
+  function getLinks() { 
+    const f = state.folders.find(x=>x.id===folder.id);
+    if(!f.links) f.links=[];
+    return f.links;
+  }
+
+  renderLinks();
+
+  function renderLinks(){
+    const list = document.getElementById('linkList');
+    list.innerHTML='';
+    getLinks().forEach((l)=>{
+      const domain = getDomain(l.url);
+      const fav = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+
+      const item = document.createElement('div');
+      item.className='link-item';
+      item.innerHTML=`
+        <div class="link-left">
+          <img class="favicon" src="${fav}">
+          <div class="clamp link-title">${esc(l.title)}</div>
+        </div>
+        <div class="menu-wrap">
+          <button class="menu-btn">⋮</button>
+          <div class="menu-panel">
+            <button data-act="up">Move Up</button>
+            <button data-act="down">Move Down</button>
+            <button data-act="edit">Edit</button>
+            <button data-act="del">Delete</button>
+          </div>
+        </div>
+      `;
+
+      item.querySelector('.link-left').onclick = ()=>window.open(l.url,'_blank');
+
+      bindMenu(item,{
+        up:()=>{
+          const links = getLinks();
+          const idx = links.findIndex(x=>x.id===l.id);
+          if(idx>0){
+            [links[idx-1], links[idx]] = [links[idx], links[idx-1]];
+            save(); renderLinks();
+          }
+        },
+        down:()=>{
+          const links = getLinks();
+          const idx = links.findIndex(x=>x.id===l.id);
+          if(idx<links.length-1){
+            [links[idx+1], links[idx]] = [links[idx], links[idx+1]];
+            save(); renderLinks();
+          }
+        },
+        edit:()=>linkModal(folder,l),
+        del:()=>{
+          if(!confirm('Delete this link?')) return;  // confirmation added
+          const links = getLinks();
+          const idx = links.findIndex(x=>x.id===l.id);
+          if(idx>-1){
+            links.splice(idx,1);
+            save(); renderLinks();
+          }
+        }
+      });
+
+      list.appendChild(item);
+    });
+  }
+}
+
+function folderModal(f){
+  showModal(`
+    <h3>${f?'Edit Folder':'New Folder'}</h3>
+    <input id="fname" value="${f?esc(f.title):''}" placeholder="Folder name">
+    <div style="text-align:right">
+      <button onclick="hideModal()" class="btn">Cancel</button>
+      <button id="saveF" class="btn primary">Save</button>
+    </div>
+  `);
+  document.getElementById('saveF').onclick=()=>{
+    const name=document.getElementById('fname').value.trim()||'Untitled';
+    if(f) f.title=name;
+    else state.folders.push({id:uid(),title:name,links:[]});
+    hideModal();save();
+  };
+}
+
+function linkModal(folder, link){
+  showModal(`
+    <h3>${link?'Edit Link':'New Link'}</h3>
+    <input id="ltitle" value="${link?esc(link.title):''}" placeholder="Title">
+    <input id="lurl" value="${link?esc(link.url):''}" placeholder="https://">
+    <div style="text-align:right">
+      <button onclick="hideModal()" class="btn">Cancel</button>
+      <button id="saveL" class="btn primary">Save</button>
+    </div>
+  `);
+
+  const titleInput = document.getElementById('ltitle');
+  const urlInput = document.getElementById('lurl');
+
+  document.getElementById('saveL').onclick = () => {
+    const title=titleInput.value.trim();
+    const url=urlInput.value.trim();
+    if(!url){alert('URL required');return;}
+
+    const f = state.folders.find(x=>x.id===folder.id);
+    if(!f.links) f.links=[];
+
+    if(link){
+      const idx = f.links.findIndex(x=>x.id===link.id);
+      if(idx>-1){
+        f.links[idx].title = title || url;
+        f.links[idx].url = fix(url);
+      }
+    }else{
+      f.links.push({id:uid(),title:title||url,url:fix(url)});
+    }
+
+    save();
+    openLinks(folder); // re-render links with correct live state
+  };
+}
+
+/* helpers */
+function showModal(h){dialog.innerHTML=h;modal.style.display='flex'}
+window.hideModal=function(){modal.style.display='none';dialog.innerHTML=''}
+function uid(){return 'id_'+Math.random().toString(36).slice(2,10)}
+function fix(u){return /^[a-z]+:\/\//i.test(u)?u:'https://'+u}
+function esc(s){return(s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))}
+function getDomain(u){try{return new URL(u).hostname}catch{return''}}
+})();
+</script>
+
+</body>
+</html>
