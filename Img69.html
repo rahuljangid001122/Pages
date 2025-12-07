@@ -68,6 +68,10 @@
         cursor: pointer;
       }
 
+      input[type="password"] {
+        transition: none; /* Prevents visual glitches */
+      }
+
       #lockscreen {
         position: fixed;
         inset: 0;
@@ -103,7 +107,7 @@
   <body>
     <!-- PASSCODE OVERLAY -->
     <div id="lockscreen">
-      <input id="passInput" type="password" placeholder="Enter Passcode" />
+      <input id="passInput" type="password" placeholder="Enter Passcode" autocomplete="off" />
       <p id="errMsg">Incorrect passcode</p>
     </div>
 
