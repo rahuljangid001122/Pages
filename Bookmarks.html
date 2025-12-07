@@ -273,11 +273,16 @@ function render(){
       },
       edit:()=>folderModal(f),
       del:()=>{
-        if(confirm('Delete folder?')){
-          state.folders=state.folders.filter(x=>x.id!==f.id);
-          save();
-        }
+        if(state.folders.length<=1){
+         alert('You must keep at least one folder.');
+         return;
       }
+        if(confirm('Delete folder?')){
+         state.folders = state.folders.filter(x=>x.id!==f.id);
+         save();
+      }
+    }
+  
     });
 
     foldersEl.appendChild(row);
