@@ -6,436 +6,418 @@
 <link href="https://fonts.googleapis.com/css2?family=Exo+2&display=swap" rel="stylesheet">
 <title>Rahul Jangid</title>
 <link rel="icon" type="image/png" href="/Pages/favicon.png">
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<style>
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-    body {
-        background: #000;
-        color: #fff;
-        font-family: 'Segoe UI', monospace;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        min-height: 100vh;
-        gap: 20px;
-        user-select: none;
-    }
-    .block {
-        width: 100%;
-        max-width: 500px;
-        background: #000;
-        padding: 20px;
-        border-radius: 10px;
-        border: none;
-    }
-    #quote {
-        font-family: 'Rock Salt', cursive;
-        font-size: clamp(1.2rem, 3.2vw, 2.2rem);
-        color: white;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-    }
-    #author {
-        font-family: 'Rock Salt', cursive;
-        font-size: clamp(0.6rem, 1.6vw, 0.8rem);
-        color: #aaa;
-        text-align: center;
-        margin-top: -8px;
-        white-space: nowrap;
-        overflow: hidden;
-    }
-    #clock {
-        font-family: 'Press Start 2P', monospace;
-        font-size: clamp(1.8rem, 6vw, 3rem);
-        text-align: center;
-        margin-bottom: 10px;
-        white-space: nowrap;
-        overflow: hidden;
-    }
-    #date {
-        font-family: 'Press Start 2P', monospace;
-        font-size: clamp(0.9rem, 3vw, 1.2rem);
-        text-align: center;
-        margin: 4px 0;
-        white-space: nowrap;
-        overflow: hidden;
-    }
-    #countdown {
-        font-family: 'Press Start 2P', monospace;
-        font-size: clamp(0.8rem, 3vw, 1.1rem);
-        color: yellow;
-        text-align: center;
-        margin: 4px 0;
-        white-space: nowrap;
-        overflow: hidden;
-    }
-    #countdown-month {
-        font-family: 'Press Start 2P', monospace;
-        font-size: clamp(0.7rem, 3vw, 1rem);
-        color: cyan;
-        text-align: center;
-        margin: 4px 0;
-        white-space: nowrap;
-        overflow: hidden;
-    }
-    
-    .progress-bar-container {
-    position: relative;
-    width: 100%;
-    height: 30px; /* Adjust the height of the bar */
-    margin-top: 10px;
-}
+  <!-- Patrick Hand font -->
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
 
-.progress-bar {
-    width: 100%;
-    height: 100%;
-    background-color: #333;
-    border-radius: 5px;
-    position: relative;
-}
+  <style>
+    /* page styles */
+    html,body{height:100%}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:#000;
+      color:#fff;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Segoe UI,Roboto,Arial,sans-serif;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:16px;
+    }
+    .wrap{ text-align:center; margin-bottom:30px; }
+    #clock{ font-size:60px; font-weight:900; }
+    #date{ font-size:18px; margin-top:8px; opacity:0.7; }
+    #countdown{ font-size:20px; margin-top:6px; opacity:0.8; }
+    #percentage{ font-size:10px; margin-top:4px; opacity:0.4; }
 
-.progress-bar > div {
-    height: 100%;
-    background-color: grey;
-    border-radius: 5px;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-.progress-text {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 10px;
-    z-index: 1;
-}
-
-    
-    #todo-messages {
-        background: #000;
-        border: 1px solid #444;
-        height: 200px;
-        overflow-y: auto;
-        display: none;
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
-        border-radius: 5px;
-        scrollbar-width: thin;
-        scrollbar-color: cyan transparent;
-    }
-    #todo-messages::-webkit-scrollbar {
-        width: 6px;
-    }
-    #todo-messages::-webkit-scrollbar-thumb {
-        background: cyan;
-        border-radius: 3px;
-    }
-    .message {
-        background: #222;
-        padding: 10px;
-        border-left: 4px solid cyan;
-        font-family: 'Exo 2', monospace;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-radius: 4px;
-        word-break: break-word;
-        font-size: 0.8rem;
-    }
-    .delete-btn {
-        background: transparent;
-        color: red;
-        border: none;
-        cursor: pointer;
-        font-size: 1.4rem;
-        transition: transform 0.2s;
-        outline: none;
-        user-select: none;
-    }
-    .delete-btn:hover {
-        transform: scale(1.2);
-    }
-    #todo-input, #password-input {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #444;
-        border-radius: 5px;
-        background: #333;
-        color: white;
-        margin-top: 10px;
-        outline: none;
-        font-size: 1rem;
-        transition: border 0.3s;
-        user-select: none;
-    }
-    #todo-input:focus, #password-input:focus {
-        border-color: cyan;
-    }
-    #todo-input {
-        display: none;
-    }
-    button, input {
-        outline: none;
-        -webkit-tap-highlight-color: transparent;
-    }
-    #copied-info {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-20px);
-        background: cyan;
-        color: black;
-        padding: 8px 12px;
-        border-radius: 5px;
-        font-family: monospace;
-        font-size: 0.9rem;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s, transform 0.3s;
-    }
-    #copied-info.show {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
+    /* Common container style */
+    .container{
+      width:95%;
+      max-width:560px;
+      box-sizing: border-box;
+      margin-bottom:12px;
     }
 
-    @keyframes blink-red {
-        0%, 100% { border-color: #444; }
-        50% { border-color: red; }
+    /* To-Do Styles */
+    .todo-container{
+      background:#1c1c1e;
+      padding:16px;
+      border-radius:12px;
+      font-size:14px;
+      max-height:350px;
+      display:flex;
+      flex-direction:column;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
-    .blink-red {
-        animation: blink-red 0.2s 3;
+    .todo-container h2{ font-size:20px; margin-bottom:12px; font-weight:600; }
+    .todo-form{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+    .todo-form input{ padding:8px 10px; border-radius:8px; border:none; font-size:14px; background:#2c2c2e; color:#fff; box-sizing: border-box; }
+    .todo-form input[type='date']{ width:140px; }
+    .todo-form input[type='text']{ flex:1; }
+    .todo-form input::-webkit-contacts-auto-fill-button, .todo-form input::-webkit-credentials-auto-fill-button { display: none !important; -webkit-appearance: none; }
+
+    .todo-list{ margin-top:10px; overflow-y:auto; flex:1; font-size:14px; }
+    .todo-item{ display:flex; align-items:center; justify-content: space-between; padding:10px; border-bottom:1px solid #333; border-radius:8px; transition: background 0.2s; }
+    .todo-item:hover{ background:rgba(255,255,255,0.05); }
+    .todo-left{ display:flex; align-items:center; flex:1; }
+    .todo-checkbox{ width:18px; height:18px; margin-right:10px; cursor:pointer; flex-shrink:0; }
+    .todo-text{
+      flex:1;
+      cursor:pointer;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .todo-text.expanded{ display:block; -webkit-line-clamp: unset; }
+    .completed{ text-decoration: line-through; opacity:0.6; }
+    .delete-btn{ background:none; border:none; color:#ff3b30; cursor:pointer; font-size:16px; transition: color 0.2s; }
+    .delete-btn:hover{ color:#ff0000; }
+    #loading-text{ text-align:center; margin-top:10px; opacity:0.6; font-size:12px; display:none; }
+
+    /* Daily Journal Styles */
+    .journal-container{
+      background:#1c1c1e;
+      padding:16px;
+      border-radius:12px;
+      font-size:14px;
+      display:flex;
+      flex-direction:column;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      font-family: 'Patrick Hand', cursive;
+    }
+    .journal-container h2{ font-size:20px; margin-bottom:12px; font-weight:600; }
+    .journal-form{ display:flex; gap:6px; margin-bottom:10px; }
+    .journal-form input[type='date']{
+      width:140px; padding:7px; border-radius:8px; border:none; background:#2c2c2e; color:#fff; box-sizing: border-box;
+      font-family: 'Patrick Hand', cursive;
+    }
+    .journal-textarea{
+      width:100%;
+      background:#2c2c2e;
+      color:#fff;
+      border:none;
+      border-radius:10px;
+      padding:12px;
+      resize:none;
+      font-size:16px;
+      min-height:410px;
+      font-family: 'Patrick Hand', cursive;
+      box-sizing: border-box;
     }
 
-    @media (max-width: 600px) {
-        body {
-            padding: 15px;
-            gap: 15px;
-        }
-        .block {
-            padding: 15px;
-        }
+    /* LOCK OVERLAY */
+    .lock-overlay{
+      position:fixed;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,1), rgba(0,0,0,1));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      padding:20px;
     }
-    #progress-summary {
-        text-align: center;
-        font-family: Monospace;
-        font-size: 0.5rem;
-        font-weight: bold;
-        color: grey;
-        margin-top: 10px;
-        letter-spacing: 1px;
+    .lock-box{
+      width:100%;
+      max-width:420px;
+      background:#0b0b0b;
+      border-radius:12px;
+      padding:20px;
+      box-shadow:0 10px 40px rgba(0,0,0,0.8);
+      border:1px solid rgba(255,255,255,0.04);
+      text-align:center;
     }
-</style>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rock+Salt&display=swap" rel="stylesheet">
+    .lock-box h1{ margin:0 0 12px 0; font-size:20px; font-weight:700; }
+    .lock-box p{ margin:0 0 14px 0; opacity:0.7; font-size:13px; }
+    .lock-input{
+      width:100%;
+      padding:12px;
+      border-radius:8px;
+      border:none;
+      background:#121212;
+      color:#fff;
+      font-size:16px;
+      box-sizing:border-box;
+      outline:none;
+      margin-bottom:10px;
+    }
+    .lock-btn{
+      width:100%;
+      padding:10px;
+      border-radius:8px;
+      border:none;
+      background:#0a84ff;
+      color:#fff;
+      font-weight:600;
+      cursor:pointer;
+      font-size:16px;
+    }
+    .lock-error{ color:#ff6b6b; font-size:13px; margin-top:10px; display:none; }
+
+    /* small animation for wrong password */
+    .shake{ animation:shake .35s; }
+    @keyframes shake {
+      0% { transform:translateX(0) }
+      20% { transform:translateX(-8px) }
+      40% { transform:translateX(8px) }
+      60% { transform:translateX(-6px) }
+      80% { transform:translateX(6px) }
+      100% { transform:translateX(0) }
+    }
+  </style>
 </head>
 <body>
-
-<div class="block">
-    <div id="quote">"What's done is done."</div>
-    <div id="author">Rahul Jangid</div>
-</div>
-
-<div class="block">
-    <div id="clock"></div>
-    <div id="date"></div>
-    <div id="countdown">
-    <div class="progress-bar-container">
-        <div id="progress-countdown" class="progress-bar">
-            <div></div> <!-- This div will be dynamically filled -->
-        </div>
-        <span id="countdown-text" class="progress-text"></span> <!-- Text inside the progress bar -->
+  <!-- LOCK OVERLAY: shown until correct password entered -->
+  <div id="lockOverlay" class="lock-overlay" aria-hidden="false">
+    <div class="lock-box" id="lockBox" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+      <h1 id="lockTitle">Rahul Jangid</h1>
+      <p>Enter the password to unlock this page.</p>
+      <input id="lockInput" class="lock-input" type="password" placeholder="Password" autocomplete="current-password" />
+      <button id="lockBtn" class="lock-btn">Unlock</button>
+      <div id="lockError" class="lock-error">Incorrect password</div>
     </div>
-</div>
+  </div>
 
-<div id="countdown-month">
-    <div class="progress-bar-container">
-        <div id="progress-countdown-month" class="progress-bar">
-            <div></div> <!-- This div will be dynamically filled -->
-        </div>
-        <span id="countdown-month-text" class="progress-text"></span> <!-- Text inside the progress bar -->
-    </div>
-</div>
+  <!-- main content (kept exactly as before) -->
+  <div class="wrap">
+    <div id="clock">--:--:--</div>
+    <div id="date">---</div>
+    <div id="countdown">--:--:--:--</div>
+    <div id="percentage">Year: --% | Month: --%</div>
+  </div>
 
-<div id="progress-summary"></div>
+  <div class="container todo-container">
+    <h2>To-Do List</h2>
+    <form class="todo-form" onsubmit="return addTodo()">
+      <input type="date" id="todo-date" />
+      <input type="text" id="todo-text" placeholder="Add New Task" autocomplete="off" />
+    </form>
+    <div id="loading-text">Loading...</div>
+    <div class="todo-list" id="todo-list"></div>
+  </div>
 
-</div>
+  <div class="container journal-container">
+    <h2>Daily Journal</h2>
+    <form class="journal-form">
+      <input type="date" id="journal-date" />
+    </form>
+    <textarea class="journal-textarea" id="journal-text" placeholder="Write your journal entry here..."></textarea>
+  </div>
 
-<div class="block">
-    <div id="todo-messages"></div>
-    <input type="text" id="todo-input" placeholder="Type a task and press Enter..." autocomplete="off">
-    <input type="password" id="password-input" placeholder="Enter Access Code..." autocomplete="off">
-</div>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<div id="copied-info">Copied!</div>
-   
-<script>
+  <script>
+    const PASSWORD_HASH = "44544e0d6770664c4c13ae2ed2438373c2014f112a6f5fcd7c241ba79222bc16";
+
+    const lockOverlay = document.getElementById('lockOverlay');
+    const lockInput = document.getElementById('lockInput');
+    const lockBtn = document.getElementById('lockBtn');
+    const lockError = document.getElementById('lockError');
+    const lockBox = document.getElementById('lockBox');
+
+    // helper: compute SHA-256 hex string of input text
+    async function sha256Hex(text){
+      const enc = new TextEncoder();
+      const data = enc.encode(text);
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hash));
+      return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    async function tryUnlock(){
+      lockError.style.display = 'none';
+      lockBox.classList.remove('shake');
+      const value = lockInput.value || '';
+      try {
+        const h = await sha256Hex(value);
+        if(h === PASSWORD_HASH){
+          // unlocked
+          lockOverlay.style.display = 'none';
+          lockOverlay.setAttribute('aria-hidden','true');
+          // focus first interactive element for accessibility
+          setTimeout(()=>{ document.getElementById('todo-text')?.focus(); }, 50);
+          return;
+        } else {
+          lockError.style.display = 'block';
+          lockBox.classList.add('shake');
+        }
+      } catch(e){
+        console.error('Error computing password hash', e);
+        lockError.textContent = 'Error';
+        lockError.style.display = 'block';
+      }
+    }
+
+    lockBtn.addEventListener('click', tryUnlock);
+    lockInput.addEventListener('keypress', function(e){
+      if(e.key === 'Enter') { e.preventDefault(); tryUnlock(); }
+    });
+
+    // Accessibility: focus input on load
+    lockInput.focus();
+
+    // ---------- END PASSWORD PROTECTION ----------
+  </script>
+
+  <script>
+    // ---------- MAIN APP (keeps original logic) ----------
     const firebaseConfig = {
-        apiKey: "AIzaSyA5iLF-J-WvNaYm63r8rDZU8_rtZsgwYng",
-        authDomain: "my-todo-2e111.firebaseapp.com",
-        databaseURL: "https://my-todo-2e111-default-rtdb.firebaseio.com",
-        projectId: "my-todo-2e111",
-        storageBucket: "my-todo-2e111.appspot.com",
-        messagingSenderId: "765517702108",
-        appId: "1:765517702108:web:2dfe7d6205040cfd2ea519"
+      apiKey: "AIzaSyA5iLF-J-WvNaYm63r8rDZU8_rtZsgwYng",
+      authDomain: "my-todo-2e111.firebaseapp.com",
+      databaseURL: "https://my-todo-2e111-default-rtdb.firebaseio.com",
+      projectId: "my-todo-2e111",
+      storageBucket: "my-todo-2e111.appspot.com",
+      messagingSenderId: "765517702108",
+      appId: "1:765517702108:web:2dfe7d6205040cfd2ea519"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const todoMessages = document.getElementById('todo-messages');
-    const todoInput = document.getElementById('todo-input');
-    const passwordInput = document.getElementById('password-input');
-    const copiedInfo = document.getElementById('copied-info');
+    // Clock & Countdown logic
+    const clockEl = document.getElementById('clock');
+    const dateEl = document.getElementById('date');
+    const countdownEl = document.getElementById('countdown');
+    const percentageEl = document.getElementById('percentage');
 
-    const accessCode = "786";
+    function pad(n){ return n<10?'0'+n:n; }
+    function getOrdinal(n){ if(n>3&&n<21) return 'th'; switch(n%10){case 1:return 'st';case 2:return 'nd';case 3:return 'rd';default:return 'th';} }
 
-    db.ref('todos').on('value', snapshot => {
-        const todos = snapshot.val() || [];
-        renderTodos(todos);
-    });
+    function updateClock(){
+      const now=new Date();
+      clockEl.textContent=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      const days=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+      const months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      dateEl.textContent=`${days[now.getDay()]} ${now.getDate()}${getOrdinal(now.getDate())} ${months[now.getMonth()]} ${now.getFullYear()}`;
 
-    function renderTodos(todos) {
-        todoMessages.innerHTML = '';
-        todos.forEach((text, index) => {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message';
+      const nextYear=new Date(`January 1, ${now.getFullYear()+1} 00:00:00`);
+      const diff=nextYear-now;
+      countdownEl.textContent=`${pad(Math.floor(diff/(1000*60*60*24)))}:${pad(Math.floor((diff/(1000*60*60))%24))}:${pad(Math.floor((diff/(1000*60))%60))}:${pad(Math.floor((diff/1000)%60))}`;
 
-            const textSpan = document.createElement('span');
-            textSpan.textContent = text;
-            textSpan.style.cursor = 'pointer';
-            textSpan.addEventListener('click', () => {
-                navigator.clipboard.writeText(text).then(() => {
-                    showCopied();
-                }).catch(err => console.error('Copy failed:', err));
-            });
-
-            const delBtn = document.createElement('button');
-            delBtn.className = 'delete-btn';
-            delBtn.textContent = '×';
-            delBtn.onclick = () => deleteTodo(index);
-
-            msgDiv.appendChild(textSpan);
-            msgDiv.appendChild(delBtn);
-            todoMessages.appendChild(msgDiv);
-            todoMessages.scrollTop = todoMessages.scrollHeight;
-        });
+      const startOfYear=new Date(`January 1, ${now.getFullYear()} 00:00:00`);
+      const yearPercentLeft=Math.floor(100-((now-startOfYear)/(nextYear-startOfYear)*100));
+      const startOfMonth=new Date(now.getFullYear(), now.getMonth(),1,0,0,0);
+      const nextMonth=new Date(now.getFullYear(), now.getMonth()+1,1,0,0,0);
+      const monthPercentLeft=Math.floor(100-((now-startOfMonth)/(nextMonth-startOfMonth)*100));
+      percentageEl.textContent=`Year: ${yearPercentLeft}% | Month: ${monthPercentLeft}%`;
     }
 
-    todoInput.addEventListener('keypress', e => {
-        if (e.key === 'Enter' && todoInput.value.trim() !== '') {
-            addTodo(todoInput.value.trim());
-            todoInput.value = '';
-        }
-    });
-
-    passwordInput.addEventListener('keypress', e => {
-        if (e.key === 'Enter') {
-            if (passwordInput.value.trim() === accessCode) {
-                todoMessages.style.display = 'flex';
-                todoInput.style.display = 'block';
-                passwordInput.style.display = 'none';
-            } else {
-                passwordInput.classList.remove('blink-red');
-                void passwordInput.offsetWidth; 
-                passwordInput.classList.add('blink-red');
-            }
-        }
-    });
-
-    function addTodo(text) {
-        db.ref('todos').once('value').then(snapshot => {
-            const todos = snapshot.val() || [];
-            todos.push(text);
-            db.ref('todos').set(todos);
-        });
-    }
-
-    function deleteTodo(index) {
-        if (confirm('Are you sure you want to permanently delete this task ?')) {
-            db.ref('todos').once('value').then(snapshot => {
-                const todos = snapshot.val() || [];
-                todos.splice(index, 1);
-                db.ref('todos').set(todos);
-            });
-        }
-    }
-
-    function showCopied() {
-        copiedInfo.classList.add('show');
-        setTimeout(() => copiedInfo.classList.remove('show'), 1000);
-    }
-    
-    function updateClock() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
-
-    const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-    const day = weekdays[now.getDay()];
-    const date = now.getDate();
-    const month = months[now.getMonth()];
-    const year = now.getFullYear();
-    document.getElementById('date').textContent = `${day} ${date} ${month} ${year}`;
-
-    // Countdown to the end of the year
-    const endOfYear = new Date(now.getFullYear() + 1, 0, 1);
-    const msLeft = endOfYear - now;
-    const days = Math.floor(msLeft / (1000 * 60 * 60 * 24));
-    const hoursLeft = Math.floor((msLeft / (1000 * 60 * 60)) % 24);
-    const mins = Math.floor((msLeft / (1000 * 60)) % 60);
-    const secs = Math.floor((msLeft / 1000) % 60);
-
-    // Update the countdown text inside the progress bar
-    document.getElementById('countdown-text').textContent = `${days}d ${hoursLeft}h ${mins}m ${secs}s`;
-
-    // Calculate the progress bar width for the countdown to the end of the year
-    const totalMsInYear = (new Date(now.getFullYear() + 1, 0, 1) - new Date(now.getFullYear(), 0, 1));
-    const progressPercentage = (1 - (msLeft / totalMsInYear)) * 100;
-
-    // Update the progress bar
-    document.getElementById('progress-countdown').children[0].style.width = `${progressPercentage}%`;
-
-    // Countdown to the end of the month
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const msLeftMonth = endOfMonth - now;
-    const daysM = Math.floor(msLeftMonth / (1000 * 60 * 60 * 24));
-    const hoursM = Math.floor((msLeftMonth / (1000 * 60 * 60)) % 24);
-    const minsM = Math.floor((msLeftMonth / (1000 * 60)) % 60);
-    const secsM = Math.floor((msLeftMonth / 1000) % 60);
-
-    // Update the countdown-month text inside the progress bar
-    document.getElementById('countdown-month-text').textContent = `${daysM}d ${hoursM}h ${minsM}m ${secsM}s`;
-
-    // Calculate the progress bar width for the countdown to the end of the month
-    const totalMsInMonth = (new Date(now.getFullYear(), now.getMonth() + 1, 1) - new Date(now.getFullYear(), now.getMonth(), 1));
-    const progressPercentageMonth = (1 - (msLeftMonth / totalMsInMonth)) * 100;
-
-    // Update the progress bar
-    document.getElementById('progress-countdown-month').children[0].style.width = `${progressPercentageMonth}%`;
-    // Show Month and Year progress summary
-    document.getElementById('progress-summary').innerHTML = `Year : ${progressPercentage.toFixed(0)}% | Month : ${progressPercentageMonth.toFixed(0)}% | <a style="
-        text-decoration: none;" href="https://rahuljangid001122.github.io/Pages/Bookmarks" target="_self">More</a>`;
-   }
-    setInterval(updateClock, 1000);
     updateClock();
-</script>
+    setInterval(updateClock,1000);
 
+    // To-Do List logic
+    let todos=[];
+    const todoListEl=document.getElementById('todo-list');
+    const todoDateInput=document.getElementById('todo-date');
+    const todoTextInput=document.getElementById('todo-text');
+    const loadingText = document.getElementById('loading-text');
+    const todayStr=new Date().toISOString().split('T')[0];
+    todoDateInput.value=todayStr;
+
+    function renderTodos(){
+      const selectedDate=todoDateInput.value;
+      todoListEl.innerHTML='';
+      todos.forEach((todo,index)=>{
+        if(todo.date!==selectedDate) return;
+        const div=document.createElement('div');
+        div.className='todo-item';
+
+        const leftDiv=document.createElement('div');
+        leftDiv.className='todo-left';
+
+        const checkbox=document.createElement('input');
+        checkbox.type='checkbox';
+        checkbox.className='todo-checkbox';
+        checkbox.checked=todo.completed;
+        checkbox.addEventListener('change',()=>{
+          todo.completed=checkbox.checked;
+          todoTextSpan.classList.toggle('completed',checkbox.checked);
+          saveTodosToFirebase();
+        });
+
+        const todoTextSpan=document.createElement('span');
+        todoTextSpan.className='todo-text';
+        todoTextSpan.textContent=todo.text;
+        if(todo.completed) todoTextSpan.classList.add('completed');
+        todoTextSpan.addEventListener('click',()=>{
+          todoTextSpan.classList.toggle('expanded');
+        });
+
+        leftDiv.appendChild(checkbox);
+        leftDiv.appendChild(todoTextSpan);
+
+        const deleteBtn=document.createElement('button');
+        deleteBtn.className='delete-btn';
+        deleteBtn.textContent='✕';
+        deleteBtn.addEventListener('click',()=>{
+          if(confirm('Are you sure you want to delete this task?')){
+            todos.splice(index,1);
+            renderTodos();
+            saveTodosToFirebase();
+          }
+        });
+
+        div.appendChild(leftDiv);
+        div.appendChild(deleteBtn);
+        todoListEl.appendChild(div);
+      });
+    }
+
+    function addTodo(){
+      const date=todoDateInput.value;
+      const text=todoTextInput.value.trim();
+      if(date&&text){
+        todos.push({date,text,completed:false});
+        renderTodos();
+        saveTodosToFirebase();
+        todoTextInput.value='';
+      }
+      return false;
+    }
+
+    function saveTodosToFirebase(){
+      db.ref('todos').set(todos).catch(err=>console.error(err));
+    }
+
+    function loadTodosFromFirebase(){
+      loadingText.style.display = 'block';
+      db.ref('todos').get().then(snapshot=>{
+        if(snapshot.exists()) todos=snapshot.val();
+        renderTodos();
+        loadingText.style.display = 'none';
+      }).catch(err=>{console.error(err); loadingText.style.display='none';});
+    }
+
+    todoDateInput.addEventListener('change',renderTodos);
+    todoTextInput.addEventListener('keypress',function(e){if(e.key==='Enter'){e.preventDefault(); addTodo();}});
+
+    loadTodosFromFirebase();
+
+    // Daily Journal logic
+    const journalDateInput = document.getElementById('journal-date');
+    const journalText = document.getElementById('journal-text');
+    const todayStrJournal = new Date().toISOString().split('T')[0];
+    journalDateInput.value = todayStrJournal;
+
+    function loadJournal(){
+      const dateKey = journalDateInput.value.replace(/-/g,'');
+      db.ref('journal/' + dateKey).get().then(snapshot => {
+        if(snapshot.exists()) journalText.value = snapshot.val();
+        else journalText.value = '';
+      }).catch(err=>console.error(err));
+    }
+
+    function saveJournal(){
+      const dateKey = journalDateInput.value.replace(/-/g,'');
+      db.ref('journal/' + dateKey).set(journalText.value).catch(err=>console.error(err));
+    }
+
+    journalDateInput.addEventListener('change',loadJournal);
+    journalText.addEventListener('input',saveJournal);
+
+    loadJournal();
+  </script>
 </body>
-</html>
+   </html>
+   
