@@ -235,8 +235,6 @@
           // unlocked
           lockOverlay.style.display = 'none';
           lockOverlay.setAttribute('aria-hidden','true');
-          // focus first interactive element for accessibility
-          setTimeout(()=>{ document.getElementById('todo-text')?.focus(); }, 50);
           return;
         } else {
           lockError.style.display = 'block';
