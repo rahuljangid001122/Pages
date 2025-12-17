@@ -42,6 +42,21 @@
         pointer-events: none;
       }
 
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        filter: brightness(0.45);
+        transition: background-image 0.6s ease;
+        background-image:
+          linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
+          var(--bg-image);
+      }
+
       .quote-box {
         max-width: min(800px, 90vw);
         padding: 2rem 1.5rem;
@@ -307,6 +322,18 @@
             }
           }
         });
+        let lastBgIndex = null;
+        const TOTAL_BACKGROUNDS = 3; // ← change only this number later
+        function setRandomBackground() {
+          let index;
+          do {
+            index = Math.floor(Math.random() * TOTAL_BACKGROUNDS) + 1;
+          } while (index === lastBgIndex);
+          lastBgIndex = index;
+          const fileName = `/Pages/images/bg_${String(index).padStart(3, "0")}.jpg`;
+          document.body.style.setProperty("--bg-image", `url('${fileName}')`);
+        }
+        setRandomBackground();
         aboutBtn.addEventListener('click', () => {
           aboutModal.style.display = 'flex';
         });
@@ -433,11 +460,13 @@
         function nextQuote() {
           currentIndex = (currentIndex + 1) % quotesArray.length;
           showQuote();
+          setRandomBackground();
         }
 
         function prevQuote() {
           currentIndex = (currentIndex - 1 + quotesArray.length) % quotesArray.length;
           showQuote();
+          setRandomBackground();
         }
         loadRandomQuote();
       });
