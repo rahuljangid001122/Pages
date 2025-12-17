@@ -19,7 +19,9 @@
         background: #000;
         font-family: "Georgia", "Times New Roman", serif;
         position: relative;
-        overflow: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* smooth native scroll on iOS */
+        
       }
 
       body::before {
