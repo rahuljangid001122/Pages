@@ -446,7 +446,7 @@
           });
         });
         async function loadRandomQuote() {
-          quoteEl.innerHTML = "Rahul Jangid < br / > Welcomes You...";
+          quoteEl.innerHTML = "Rahul Jangid<br/>Welcomes You...";
           authorEl.textContent = '';
           const snapshot = await get(child(ref(db), 'quotes'));
           if (!snapshot.exists()) return;
