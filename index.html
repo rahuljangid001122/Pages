@@ -196,6 +196,12 @@
       .company-name {
         cursor: pointer;
       }
+      
+      pre a {
+  color: #1a0dab; /* standard link blue */
+  text-decoration: none;
+}
+
     </style>
   </head>
   <body>
@@ -243,6 +249,13 @@
           <p style="font-size:0.9rem; line-height:1.4;">What is done is done. What is gone is gone. There's no time to regret. Move on ! You can wait but time doesn't wait for anyone. You can only increase your productivity to save time.</p>
           <h3 style="font-size:1rem; margin-top:1rem;">Biography</h3>
           <p style="font-size:0.9rem; line-height:1.4;">In Progress...</p>
+          <pre id="currentBg" style="
+    font-size:0.85rem;
+    background:#eee;
+    padding:0.4rem 0.6rem;
+    border-radius:4px;
+    overflow-x:auto;
+"></pre>
         </div>
         <!-- STICKY FOOTER -->
         <button id="closeAbout" style="
@@ -304,24 +317,49 @@
         const aboutBtn = document.getElementById('aboutBtn');
         const aboutModal = document.getElementById('aboutModal');
         const closeAbout = document.getElementById('closeAbout');
+        function isAnyModalOpen() {
+  return modal.style.display === 'flex' || aboutModal.style.display === 'flex';
+}
+
         let startX = 0;
         let endX = 0;
+        let isMultiTouch = false;
+        
         document.addEventListener('touchstart', (e) => {
-          startX = e.touches[0].clientX;
-        }, {
-          passive: true
-        });
-        document.addEventListener('touchend', (e) => {
-          endX = e.changedTouches[0].clientX;
-          const diff = startX - endX;
-          if (Math.abs(diff) > 60) {
-            if (diff > 0) {
-              nextQuote(); // swipe left
-            } else {
-              prevQuote(); // swipe right
-            }
-          }
-        });
+  if (isAnyModalOpen()) return;
+
+  if (e.touches.length !== 1) {
+    isMultiTouch = true;
+    return;
+  }
+
+  isMultiTouch = false;
+  startX = e.touches[0].clientX;
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  if (e.touches.length !== 1) {
+    isMultiTouch = true;
+  }
+}, { passive: true });
+
+
+document.addEventListener('touchend', (e) => {
+  if (isAnyModalOpen()) return;
+  if (isMultiTouch) return;
+
+  if (e.changedTouches.length !== 1) return;
+
+  endX = e.changedTouches[0].clientX;
+  const diff = startX - endX;
+
+  if (Math.abs(diff) > 60) {
+    diff > 0 ? nextQuote() : prevQuote();
+  }
+});
+
+
+
         let lastBgIndex = null;
         const TOTAL_BACKGROUNDS = 54; // ← change only this number later
         function setRandomBackground() {
@@ -332,6 +370,24 @@
           lastBgIndex = index;
           const fileName = `/Pages/images/bg_${String(index).padStart(3, "0")}.jpg`;
           document.body.style.setProperty("--bg-image", `url('${fileName}')`);
+          
+          
+          // 1️⃣ extract number from filename, e.g., bg_007.jpg → 007
+const match = fileName.match(/(\d+)/);
+const number = match ? match[1] : '???';
+
+// 2️⃣ get currently displayed author
+const authorName = authorEl.textContent.trim() || 'Unknown';
+
+// 3️⃣ create Google search link
+const authorLink = `<a href="https://www.google.com/search?q=${encodeURIComponent(authorName)}" target="_blank">${authorName}</a>`;
+
+// 4️⃣ set the code block
+const currentBgEl = document.getElementById("currentBg");
+if (currentBgEl) {
+  currentBgEl.innerHTML = `${number} | ${authorLink}`;
+}
+
         }
         setRandomBackground();
         aboutBtn.addEventListener('click', () => {
@@ -383,6 +439,11 @@
           authorInput.value = '';
         });
         moreBtn.addEventListener('click', async () => {
+            // 🔹 TOGGLE ONLY (no logic change)
+  if (quoteList.style.display === 'block') {
+    quoteList.style.display = 'none';
+    return;
+  }
           quoteList.style.display = 'block';
           quoteList.innerHTML = 'Loading...';
           const snapshot = await get(child(ref(db), 'quotes'));
@@ -472,4 +533,4 @@
       });
     </script>
   </body>
-  </html>
+</html>
