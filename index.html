@@ -383,22 +383,13 @@
           authorInput.value = '';
         });
         moreBtn.addEventListener('click', async () => {
-          // 👉 TOGGLE: if visible, hide and return
-          if (quoteList.style.display === 'block') {
-            quoteList.style.display = 'none';
-            return;
-          }
-          // 👉 SHOW
           quoteList.style.display = 'block';
-          // If already loaded, don't reload
-          if (quoteList.innerHTML.trim() !== '') return;
-          quoteList.innerHTML = 'Loading…';
+          quoteList.innerHTML = 'Loading...';
           const snapshot = await get(child(ref(db), 'quotes'));
           if (!snapshot.exists()) {
             quoteList.innerHTML = 'No quotes found';
             return;
           }
-          // --- your existing rendering logic below (UNCHANGED) ---
           const data = snapshot.val();
           const grouped = {};
           Object.entries(data).forEach(([key, value]) => {
@@ -416,11 +407,10 @@
             const quotes = grouped[author];
             const authorHeader = document.createElement('div');
             authorHeader.className = 'author-header';
-            authorHeader.textContent = quotes[0].originalAuthor;
+            authorHeader.textContent = quotes[0].originalAuthor.replace(/\s+/g, ' ').trim();
             quoteList.appendChild(authorHeader);
             const quoteContainer = document.createElement('div');
             quoteContainer.className = 'author-quotes';
-            quoteContainer.style.display = 'none';
             quotes.forEach(qObj => {
               const div = document.createElement('div');
               div.className = 'quote-item';
@@ -429,19 +419,19 @@
               const delBtn = document.createElement('button');
               delBtn.innerHTML = '&times;';
               delBtn.className = 'delete-btn';
-              delBtn.onclick = async () => {
-                if (confirm('Delete this quote?')) {
+              delBtn.addEventListener('click', async () => {
+                if (confirm('Are you sure you want to delete this quote?')) {
                   await remove(ref(db, `quotes/${qObj.id}`));
                   div.remove();
                 }
-              };
+              });
               div.appendChild(span);
               div.appendChild(delBtn);
               quoteContainer.appendChild(div);
             });
-            authorHeader.onclick = () => {
+            authorHeader.addEventListener('click', () => {
               quoteContainer.style.display = quoteContainer.style.display === 'none' ? 'block' : 'none';
-            };
+            });
             quoteList.appendChild(quoteContainer);
           });
         });
@@ -482,4 +472,4 @@
       });
     </script>
   </body>
-</html>
+  </html>
