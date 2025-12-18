@@ -200,7 +200,7 @@
   </head>
   <body>
     <div class="quote-box">
-      <div class="quote">Rahul Jangid<br/>Welcomes<br/>You...</div>
+      <div class="quote">Rahul Jangid</div>
       <div class="author"></div>
     </div>
     <footer>
@@ -436,7 +436,7 @@
           });
         });
         async function loadRandomQuote() {
-          quoteEl.textContent = document.title;
+          quoteEl.innerHTML = "Rahul Jangid<br/>Welcomes<br/>You...";
           authorEl.textContent = '';
           const snapshot = await get(child(ref(db), 'quotes'));
           if (!snapshot.exists()) return;
