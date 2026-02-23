@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Multi Bookmark Managers</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  font-size: 17px;
+  background: #fafafa;
+}
+
+.manager-section {
+  margin: 30px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+}
+
+.manager-title {
+  padding: 12px 16px;
+  font-size: 20px;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+  background: #f5f5f5;
+}
+
+/* NEW ACTION BAR */
+.actions {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.actions button {
+  padding: 12px 18px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 16px;
+}
+
+.actions button:hover {
+  background: #ddd;
+}
+
+.tabs, .subtabs {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.tabs button, .subtabs button {
+  padding: 12px 18px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  flex: 0 0 auto;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+}
+
+.tabs button.active, .subtabs button.active {
+  background: #ddd;
+  font-weight: bold;
+}
+
+.bookmarks {
+  padding: 18px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.bookmark-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.bookmark-item:hover {
+  background: #f0f0f0;
+}
+
+.bookmark-item.selected {
+  background: #d0e6ff;
+}
+
+.bookmark-item img {
+  margin-right: 10px;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.bookmark-item a {
+  text-decoration: none;
+  color: #0077cc;
+}
+</style>
+</head>
+
+<body>
+
+<div id="workManager" class="manager-section"></div>
+<div id="researchManager" class="manager-section"></div>
+<div id="personalManager" class="manager-section"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyA5iLF-J-WvNaYm63r8rDZU8_rtZsgwYng",
+  authDomain: "my-todo-2e111.firebaseapp.com",
+  databaseURL: "https://my-todo-2e111-default-rtdb.firebaseio.com",
+  projectId: "my-todo-2e111",
+  storageBucket: "my-todo-2e111.appspot.com",
+  messagingSenderId: "765517702108",
+  appId: "1:7655176208:web:2dfe7d6205040cfd2ea519"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+class BookmarkManager {
+  constructor(containerId, dbKey, title) {
+    this.container = document.getElementById(containerId);
+    this.dbRef = database.ref("bookmarkManagers/" + dbKey);
+    this.title = title;
+    this.MAX_NAME_LENGTH = 20;
+
+    this.data = { "Default Folder": { "General": [] } };
+    this.currentFolder = null;
+    this.currentSubfolder = null;
+    this.selectedBookmarkIndex = null;
+
+    this.buildLayout();
+    this.listen();
+  }
+
+  listen() {
+    this.dbRef.on("value", snapshot => {
+      this.data = snapshot.val() || { "Default Folder": { "General": [] } };
+      this.render(false);
+    });
+  }
+
+  save() {
+    this.dbRef.set(this.data);
+  }
+
+  sanitizeName(name) {
+    if (!name) return null;
+    name = name.trim();
+    if (!name) return null;
+    return name.length > this.MAX_NAME_LENGTH
+      ? name.substring(0, this.MAX_NAME_LENGTH)
+      : name;
+  }
+
+  buildLayout() {
+    this.container.innerHTML = `
+      <div class="manager-title">${this.title}</div>
+      <div class="actions"></div>
+      <div class="tabs"></div>
+      <div class="subtabs"></div>
+      <div class="bookmarks"></div>
+    `;
+
+    this.actionsDiv = this.container.querySelector(".actions");
+    this.tabsDiv = this.container.querySelector(".tabs");
+    this.subtabsDiv = this.container.querySelector(".subtabs");
+    this.bookmarksDiv = this.container.querySelector(".bookmarks");
+
+    this.buildMenu();
+  }
+
+  buildMenu() {
+    const actions = [
+      ["Add Folder", () => this.addFolder()],
+      ["Delete Folder", () => this.deleteFolder()],
+      ["Add Subfolder", () => this.addSubfolder()],
+      ["Delete Subfolder", () => this.deleteSubfolder()],
+      ["Add Bookmark", () => this.addBookmark()],
+      ["Edit Bookmark", () => this.editBookmark()],
+      ["Delete Bookmark", () => this.deleteBookmark()]
+    ];
+
+    this.actionsDiv.innerHTML = "";
+    actions.forEach(([label, action]) => {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      btn.onclick = action;
+      this.actionsDiv.appendChild(btn);
+    });
+  }
+
+  render(save = true) {
+    this.renderTabs();
+    this.renderSubtabs();
+    this.renderBookmarks();
+    if (save) this.save();
+  }
+
+  renderTabs() {
+    this.tabsDiv.innerHTML = "";
+    Object.keys(this.data).forEach(folder => {
+      const btn = document.createElement("button");
+      btn.textContent = folder;
+      if (!this.currentFolder) this.currentFolder = folder;
+      if (folder === this.currentFolder) btn.classList.add("active");
+      btn.onclick = () => {
+        this.currentFolder = folder;
+        this.currentSubfolder = null;
+        this.render();
+      };
+      this.tabsDiv.appendChild(btn);
+    });
+  }
+
+  renderSubtabs() {
+    this.subtabsDiv.innerHTML = "";
+    if (!this.currentFolder) return;
+
+    Object.keys(this.data[this.currentFolder]).forEach(sub => {
+      const btn = document.createElement("button");
+      btn.textContent = sub;
+      if (!this.currentSubfolder) this.currentSubfolder = sub;
+      if (sub === this.currentSubfolder) btn.classList.add("active");
+      btn.onclick = () => {
+        this.currentSubfolder = sub;
+        this.renderBookmarks();
+      };
+      this.subtabsDiv.appendChild(btn);
+    });
+  }
+
+  renderBookmarks() {
+    this.bookmarksDiv.innerHTML = "";
+    if (!this.currentSubfolder) return;
+
+    const links = this.data[this.currentFolder][this.currentSubfolder];
+
+    links.forEach((link, index) => {
+      const div = document.createElement("div");
+      div.className = "bookmark-item";
+
+      const favicon = document.createElement("img");
+      favicon.src =
+        "https://www.google.com/s2/favicons?sz=32&domain_url=" + link.url;
+
+      favicon.onclick = () => {
+        this.selectedBookmarkIndex = index;
+        this.bookmarksDiv
+          .querySelectorAll(".bookmark-item")
+          .forEach(el => el.classList.remove("selected"));
+        div.classList.add("selected");
+      };
+
+      const a = document.createElement("a");
+      a.href = link.url;
+      a.target = "_blank";
+      a.textContent = link.name;
+
+      div.appendChild(favicon);
+      div.appendChild(a);
+      this.bookmarksDiv.appendChild(div);
+    });
+  }
+
+  addFolder() {
+    let name = this.sanitizeName(prompt("Folder name:"));
+    if (!name || this.data[name]) return;
+    this.data[name] = {};
+    this.currentFolder = name;
+    this.currentSubfolder = null;
+    this.render();
+  }
+
+  deleteFolder() {
+    if (!this.currentFolder) return;
+    if (confirm("Delete folder?")) {
+      delete this.data[this.currentFolder];
+      this.currentFolder = null;
+      this.currentSubfolder = null;
+      this.render();
+    }
+  }
+
+  addSubfolder() {
+    if (!this.currentFolder) return;
+    let name = this.sanitizeName(prompt("Subfolder name:"));
+    if (!name || this.data[this.currentFolder][name]) return;
+    this.data[this.currentFolder][name] = [];
+    this.currentSubfolder = name;
+    this.render();
+  }
+
+  deleteSubfolder() {
+    if (!this.currentSubfolder) return;
+    if (confirm("Delete subfolder?")) {
+      delete this.data[this.currentFolder][this.currentSubfolder];
+      this.currentSubfolder = null;
+      this.render();
+    }
+  }
+
+  addBookmark() {
+    if (!this.currentSubfolder) return;
+    const name = prompt("Bookmark name:");
+    const url = prompt("Bookmark URL:");
+    if (!name || !url) return;
+    this.data[this.currentFolder][this.currentSubfolder].push({ name, url });
+    this.render();
+  }
+
+  editBookmark() {
+    if (this.selectedBookmarkIndex === null)
+      return alert("Select a bookmark first.");
+
+    const link =
+      this.data[this.currentFolder][this.currentSubfolder][
+        this.selectedBookmarkIndex
+      ];
+
+    const name = prompt("New name:", link.name);
+    const url = prompt("New URL:", link.url);
+    if (!name || !url) return;
+
+    link.name = name;
+    link.url = url;
+    this.render();
+  }
+
+  deleteBookmark() {
+    if (this.selectedBookmarkIndex === null)
+      return alert("Select a bookmark first.");
+
+    if (confirm("Delete bookmark?")) {
+      this.data[this.currentFolder][this.currentSubfolder].splice(
+        this.selectedBookmarkIndex,
+        1
+      );
+      this.selectedBookmarkIndex = null;
+      this.render();
+    }
+  }
+}
+
+new BookmarkManager("workManager", "workBookmarks", "Work Manager");
+new BookmarkManager("researchManager", "researchBookmarks", "Research Manager");
+new BookmarkManager("personalManager", "personalBookmarks", "Personal Manager");
+
+</script>
+</body>
+</html>
