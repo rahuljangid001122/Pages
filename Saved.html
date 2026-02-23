@@ -155,7 +155,7 @@ class BookmarkManager {
 
   listen() {
     this.dbRef.on("value", snapshot => {
-      this.data = snapshot.val() || { "Default Folder": { "General": [] } };
+      this.data = snapshot.val() || { "Favourites": { "Default": [] } };
       this.render(false);
     });
   }
