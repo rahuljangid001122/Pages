@@ -210,7 +210,7 @@ body {
   margin-right: auto;
 }
 
-#lockBar span {
+#lockStatus {
   font-size: 14px;
   color: #888;
 }
@@ -310,13 +310,8 @@ sectionsRef.on("value", snapshot => {
   if (val) {
     newConfig = Object.values(val).sort((a, b) => a.order - b.order);
   }
-  // Only re-render if sections actually changed (added, removed, renamed, reordered)
-  const oldSig = JSON.stringify(sectionsConfig.map(s => s.id + s.title + s.order));
-  const newSig = JSON.stringify(newConfig.map(s => s.id + s.title + s.order));
   sectionsConfig = newConfig;
-  if (oldSig !== newSig) {
-    renderAllSections();
-  }
+  renderAllSections();
 });
 
 function saveSectionsConfig() {
@@ -332,7 +327,18 @@ function renderAllSections() {
   const container = document.getElementById("sectionsContainer");
   const emptyMsg = document.getElementById("emptyMsg");
 
-  managers.forEach(m => m.destroy && m.destroy());
+  // Preserve existing managers by dbKey so we don't destroy live ones
+  const existingManagers = {};
+  managers.forEach(m => {
+    existingManagers[m.dbKey] = m;
+  });
+
+  // Find managers no longer needed and destroy them
+  const newDbKeys = sectionsConfig.map(s => s.dbKey);
+  managers.forEach(m => {
+    if (!newDbKeys.includes(m.dbKey)) m.destroy && m.destroy();
+  });
+
   managers = [];
   container.innerHTML = "";
 
@@ -346,8 +352,19 @@ function renderAllSections() {
       div.className = "manager-section";
       container.appendChild(div);
 
-      const mgr = new BookmarkManager("sec_" + sec.id, sec.dbKey, sec.title, idx);
-      managers.push(mgr);
+      if (existingManagers[sec.dbKey]) {
+        // Reuse existing manager — just update its index and re-render into new div
+        const mgr = existingManagers[sec.dbKey];
+        mgr.sectionIndex = idx;
+        mgr.container = div;
+        mgr.buildLayout();
+        mgr.render(false);
+        managers.push(mgr);
+      } else {
+        // Brand new section
+        const mgr = new BookmarkManager("sec_" + sec.id, sec.dbKey, sec.title, idx);
+        managers.push(mgr);
+      }
     });
   }
 
@@ -480,6 +497,7 @@ class BookmarkManager {
   }
 
   render(save = true) {
+    if (this.data === null) return; // not yet loaded
     this.renderTabs();
     this.renderSubtabs();
     this.renderBookmarks();
@@ -655,20 +673,6 @@ class BookmarkManager {
 document.getElementById("addSectionBtn").addEventListener("click", () => {
   const title = prompt("Section title:");
   if (!title || !title.trim()) return;
-
-  const cleanTitle = title.trim();
-  const base = cleanTitle.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
-  const uid = Date.now().toString();
-  const id = base + "_" + uid;
-  const dbKey = base + "Bookmarks_" + uid;
-
-  sectionsConfig.push({ id, dbKey, title: cleanTitle, order: sectionsConfig.length });
-  saveSectionsConfig();
-});
-</script>
-</body>
-</html>
-if (!title || !title.trim()) return;
 
   const cleanTitle = title.trim();
   const base = cleanTitle.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
