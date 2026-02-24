@@ -668,3 +668,17 @@ document.getElementById("addSectionBtn").addEventListener("click", () => {
 </script>
 </body>
 </html>
+if (!title || !title.trim()) return;
+
+  const cleanTitle = title.trim();
+  const base = cleanTitle.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+  const uid = Date.now().toString();
+  const id = base + "_" + uid;
+  const dbKey = base + "Bookmarks_" + uid;
+
+  sectionsConfig.push({ id, dbKey, title: cleanTitle, order: sectionsConfig.length });
+  saveSectionsConfig();
+});
+</script>
+</body>
+</html>
