@@ -202,6 +202,9 @@ body {
   background: #f0f0f0;
   border-bottom: 1px solid #ddd;
   gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 #pageTitle {
@@ -335,15 +338,20 @@ body {
 
 /* ── Shared Toolbar ───────────────────────────────────── */
 #sharedToolbar {
+  position: sticky;
+  top: 49px;
+  z-index: 99;
   background: #fff;
   border-bottom: 1px solid #ddd;
-  padding: 8px 16px;
+  padding: 6px 12px;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 #toolbarInner {
-  display: flex;
-  flex-wrap: wrap;
+  display: inline-flex;
   gap: 6px;
+  flex-wrap: nowrap;
 }
 
 #toolbarInner button {
@@ -355,6 +363,7 @@ body {
   font-size: 13px;
   color: #444;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 #toolbarInner button:hover {
@@ -1100,6 +1109,14 @@ class BookmarkManager {
     }
   }
 }
+
+// ─── Sticky toolbar offset ───────────────────────────────────────────────────
+function updateToolbarTop() {
+  const lockBarH = document.getElementById("lockBar").offsetHeight;
+  document.getElementById("sharedToolbar").style.top = lockBarH + "px";
+}
+window.addEventListener("resize", updateToolbarTop);
+updateToolbarTop();
 
 // ─── Data Manager ────────────────────────────────────────────────────────────
 document.getElementById("dataManagerBtn").addEventListener("click", () => {
