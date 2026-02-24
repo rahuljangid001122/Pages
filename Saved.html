@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RJ's Bookmark Manager</title>
 <link rel="icon" href="/Pages/favicon.png" />    
   
@@ -18,6 +19,12 @@ body {
   border: 1px solid #ddd;
   border-radius: 6px;
   background: white;
+  cursor: pointer;
+}
+
+.manager-section.active-section {
+  border-color: #0077cc;
+  box-shadow: 0 0 0 2px #cce4ff;
 }
 
 .manager-title-bar {
@@ -27,6 +34,7 @@ body {
   border-bottom: 1px solid #ddd;
   background: #f5f5f5;
   gap: 10px;
+  border-radius: 6px 6px 0 0;
 }
 
 .manager-title {
@@ -81,32 +89,7 @@ body {
   color: #c00;
 }
 
-.actions {
-  display: flex;
-  overflow-x: auto;
-  white-space: nowrap;
-  background: #f5f5f5;
-  border-bottom: 1px solid #ddd;
-}
 
-.actions button {
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  flex: 0 0 auto;
-  font-size: 13px;
-  display: none;
-  margin: 8px 4px;
-  color: #444;
-  white-space: nowrap;
-}
-
-.actions button:hover {
-  background: #e8e8e8;
-  border-color: #aaa;
-}
 
 .tabs, .subtabs {
   display: flex;
@@ -136,15 +119,21 @@ body {
 
 .bookmarks {
   padding: 18px;
-  max-height: 240px;
+  max-height: 300px;
   overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
 }
 
 .bookmark-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 10px;
-  border-radius: 4px;
+  padding: 10px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
 }
 
 .bookmark-item:hover {
@@ -156,17 +145,24 @@ body {
 }
 
 .bookmark-item img {
-  margin-right: 10px;
-  cursor: pointer;
-  width: 20px;
-  height: 20px;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 6px;
+  border-radius: 8px;
 }
 
 .bookmark-item a {
   text-decoration: none;
-  color: #0077cc;
-  font-size: 20px;
-  font-weight: bold;
+  color: #333;
+  font-size: 11px;
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+  max-width: 72px;
+  line-height: 1.3;
 }
 
 #addSectionBtn {
@@ -229,6 +225,266 @@ body {
 #lockBtn:hover {
   background: #e8e8e8;
 }
+
+/* ── Data Manager Popup ───────────────────────────────── */
+#dataManagerOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#dataManagerPopup {
+  background: white;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 480px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+#dataManagerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid #ddd;
+  background: #f5f5f5;
+  border-radius: 10px 10px 0 0;
+}
+
+#dataManagerHeader strong {
+  font-size: 16px;
+}
+
+#dataManagerClose {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #888;
+  padding: 0 4px;
+}
+
+#dataManagerClose:hover {
+  color: #333;
+}
+
+#dataManagerList {
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dm-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.dm-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dm-item-title {
+  font-weight: bold;
+  font-size: 14px;
+  color: #222;
+}
+
+.dm-item-meta {
+  font-size: 12px;
+  color: #888;
+}
+
+.dm-delete-btn {
+  background: none;
+  border: 1px solid #f99;
+  border-radius: 4px;
+  color: #c00;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 10px;
+  flex-shrink: 0;
+}
+
+.dm-delete-btn:hover {
+  background: #fde;
+}
+
+.dm-empty {
+  text-align: center;
+  color: #aaa;
+  padding: 30px;
+  font-size: 14px;
+}
+
+/* ── Shared Toolbar ───────────────────────────────────── */
+#sharedToolbar {
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 8px 16px;
+}
+
+#toolbarInner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#toolbarInner button {
+  padding: 5px 11px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  color: #444;
+  white-space: nowrap;
+}
+
+#toolbarInner button:hover {
+  background: #e8e8e8;
+  border-color: #aaa;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .manager-section {
+    margin: 16px;
+  }
+
+  #addSectionBtn {
+    margin: 0 16px 16px 16px;
+    width: calc(100% - 32px);
+  }
+
+  #lockBar {
+    padding: 8px 16px;
+  }
+
+  .manager-title {
+    font-size: 17px;
+    max-width: 200px;
+  }
+
+  .tabs button, .subtabs button {
+    padding: 10px 14px;
+    font-size: 15px;
+    max-width: 160px;
+  }
+
+  .bookmarks {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 10px;
+    padding: 14px;
+    max-height: 260px;
+  }
+
+  .actions button {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .manager-section {
+    margin: 10px;
+    border-radius: 8px;
+  }
+
+  #addSectionBtn {
+    margin: 0 10px 10px 10px;
+    width: calc(100% - 20px);
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  #lockBar {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  #pageTitle {
+    font-size: 15px;
+  }
+
+  #lockBtn {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .manager-title {
+    font-size: 15px;
+    max-width: 140px;
+  }
+
+  .manager-title-bar {
+    padding: 10px 10px;
+    gap: 6px;
+  }
+
+  .section-action-btn {
+    font-size: 13px;
+    padding: 3px 7px;
+  }
+
+  .tabs button, .subtabs button {
+    padding: 8px 10px;
+    font-size: 13px;
+    max-width: 120px;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 8px;
+  }
+
+  .actions button {
+    font-size: 11px;
+    padding: 4px 8px;
+    margin: 2px;
+  }
+
+  .bookmarks {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+    padding: 10px;
+    max-height: 220px;
+  }
+
+  .bookmark-item img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .bookmark-item a {
+    font-size: 10px;
+    max-width: 58px;
+  }
+
+  .section-btns {
+    gap: 4px;
+  }
+}
 </style>
 </head>
 
@@ -236,7 +492,33 @@ body {
 
 <div id="lockBar">
   <img src="/Pages/favicon.png" style="width:32px;height:32px;border-radius:6px;object-fit:cover;"> <span id="pageTitle">RJ's Bookmark Manager</span>
+  <button id="dataManagerBtn" title="Manage Firebase Data" style="display:none;">🗄</button>
   <button id="lockBtn">🔒</button>
+</div>
+
+<!-- Data Manager Popup -->
+<div id="dataManagerOverlay" style="display:none;">
+  <div id="dataManagerPopup">
+    <div id="dataManagerHeader">
+      <strong>Firebase Data Manager</strong>
+      <button id="dataManagerClose">✕</button>
+    </div>
+    <div id="dataManagerList"></div>
+  </div>
+</div>
+
+<div id="sharedToolbar" style="display:none;">
+  <div id="toolbarInner">
+    <button data-action="add-folder">Add Folder</button>
+    <button data-action="pin-folder">Pin Folder</button>
+    <button data-action="delete-folder">Delete Folder</button>
+    <button data-action="add-subfolder">Add Subfolder</button>
+    <button data-action="pin-subfolder">Pin Subfolder</button>
+    <button data-action="delete-subfolder">Delete Subfolder</button>
+    <button data-action="add-bookmark">Add Bookmark</button>
+    <button data-action="edit-bookmark">Edit Bookmark</button>
+    <button data-action="delete-bookmark">Delete Bookmark</button>
+  </div>
 </div>
 
 <div id="sectionsContainer"></div>
@@ -270,10 +552,17 @@ let managers = [];
 const CORRECT_PASSWORD = "6409";
 let isUnlocked = false;
 
+let activeManager = null;
+
+function setActiveManager(mgr) {
+  activeManager = mgr;
+  // Highlight active section
+  document.querySelectorAll(".manager-section").forEach(el => el.classList.remove("active-section"));
+  if (mgr) mgr.container.classList.add("active-section");
+}
+
 function showEditButtons(visible) {
-  document.querySelectorAll(".actions button").forEach(btn => {
-    btn.style.display = visible ? "inline-block" : "none";
-  });
+  document.getElementById("sharedToolbar").style.display = visible ? "block" : "none";
   document.querySelectorAll(".section-action-btn").forEach(btn => {
     btn.style.display = visible ? "inline-block" : "none";
   });
@@ -281,7 +570,24 @@ function showEditButtons(visible) {
     div.style.display = visible ? "flex" : "none";
   });
   document.getElementById("addSectionBtn").style.display = visible ? "block" : "none";
+  document.getElementById("dataManagerBtn").style.display = visible ? "inline-block" : "none";
 }
+
+// Wire shared toolbar buttons
+document.getElementById("sharedToolbar").addEventListener("click", e => {
+  const btn = e.target.closest("[data-action]");
+  if (!btn || !activeManager) return;
+  const action = btn.dataset.action;
+  if (action === "add-folder") activeManager.addFolder();
+  else if (action === "pin-folder") activeManager.togglePinFolder();
+  else if (action === "delete-folder") activeManager.deleteFolder();
+  else if (action === "add-subfolder") activeManager.addSubfolder();
+  else if (action === "pin-subfolder") activeManager.togglePinSubfolder();
+  else if (action === "delete-subfolder") activeManager.deleteSubfolder();
+  else if (action === "add-bookmark") activeManager.addBookmark();
+  else if (action === "edit-bookmark") activeManager.editBookmark();
+  else if (action === "delete-bookmark") activeManager.deleteBookmark();
+});
 
 document.getElementById("lockBtn").addEventListener("click", () => {
   if (isUnlocked) {
@@ -367,6 +673,15 @@ function renderAllSections() {
 
   // Re-apply lock state after re-render
   showEditButtons(isUnlocked);
+
+  // Auto-activate first section
+  if (managers.length > 0 && !activeManager) {
+    setActiveManager(managers[0]);
+  } else if (activeManager) {
+    // Re-activate same manager if it still exists
+    const stillExists = managers.find(m => m.dbKey === activeManager.dbKey);
+    setActiveManager(stillExists || (managers.length > 0 ? managers[0] : null));
+  }
 }
 
 // ─── BookmarkManager ──────────────────────────────────────────────────────────
@@ -380,24 +695,39 @@ class BookmarkManager {
     this.MAX_NAME_LENGTH = 20;
 
     this.data = null; // null means not yet loaded
+    this.pins = { folders: [], subs: {} };
     this.currentFolder = null;
     this.currentSubfolder = null;
     this.selectedBookmarkIndex = null;
     this._listener = null;
+    this._pinsListener = null;
+
+    this.pinsRef = database.ref("bookmarkPins/" + dbKey);
 
     this.buildLayout();
     this.listen();
+    this.listenPins();
   }
 
   destroy() {
-    if (this._listener) {
-      this.dbRef.off("value", this._listener);
-    }
+    if (this._listener) this.dbRef.off("value", this._listener);
+    if (this._pinsListener) this.pinsRef.off("value", this._pinsListener);
   }
 
   listen() {
     this._listener = this.dbRef.on("value", snapshot => {
       this.data = snapshot.val() || {};
+      this.render(false);
+    });
+  }
+
+  listenPins() {
+    this._pinsListener = this.pinsRef.on("value", snapshot => {
+      const val = snapshot.val();
+      this.pins = {
+        folders: (val && Array.isArray(val.folders)) ? val.folders : [],
+        subs: (val && val.subs && typeof val.subs === "object") ? val.subs : {}
+      };
       this.render(false);
     });
   }
@@ -421,21 +751,24 @@ class BookmarkManager {
       <div class="manager-title-bar">
         <span class="manager-title">${this.title}</span>
         <div class="section-btns">
+          <button class="section-action-btn" data-action="move-up" title="Move up"><b>↑</b></button>
+          <button class="section-action-btn" data-action="move-down" title="Move down"><b>↓</b></button>
           <button class="section-action-btn" data-action="rename" title="Rename section">✏️</button>
           <button class="section-action-btn danger" data-action="delete-section" title="Delete section">🗑</button>
         </div>
       </div>
-      <div class="actions"></div>
       <div class="tabs"></div>
       <div class="subtabs"></div>
       <div class="bookmarks"></div>
     `;
 
-    this.actionsDiv = this.container.querySelector(".actions");
     this.tabsDiv = this.container.querySelector(".tabs");
     this.subtabsDiv = this.container.querySelector(".subtabs");
     this.bookmarksDiv = this.container.querySelector(".bookmarks");
     this.titleEl = this.container.querySelector(".manager-title");
+
+    // Click section to make it active
+    this.container.addEventListener("click", () => setActiveManager(this));
 
     // Show full title on click if truncated
     this.titleEl.addEventListener("click", () => {
@@ -444,16 +777,71 @@ class BookmarkManager {
       }
     });
 
+    this.container.querySelector("[data-action='move-up']")
+      .addEventListener("click", () => this.moveSection(-1));
+
+    this.container.querySelector("[data-action='move-down']")
+      .addEventListener("click", () => this.moveSection(1));
+
     this.container.querySelector("[data-action='rename']")
       .addEventListener("click", () => this.renameSection());
 
     this.container.querySelector("[data-action='delete-section']")
       .addEventListener("click", () => this.deleteSection());
 
-    this.buildMenu();
   }
 
   // ── Section management ──────────────────────────────────────────────────────
+
+  moveSection(direction) {
+    const idx = this.sectionIndex;
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= sectionsConfig.length) return;
+    // Swap
+    const temp = sectionsConfig[idx];
+    sectionsConfig[idx] = sectionsConfig[newIdx];
+    sectionsConfig[newIdx] = temp;
+    saveSectionsConfig();
+  }
+
+  togglePinFolder() {
+    if (!this.currentFolder) return alert("Select a folder first.");
+    if (!this.pins.folders) this.pins.folders = [];
+    const pins = this.pins.folders;
+    const idx = pins.indexOf(this.currentFolder);
+    if (idx === -1) {
+      pins.push(this.currentFolder);
+      alert('"' + this.currentFolder + '" folder pinned!');
+    } else {
+      pins.splice(idx, 1);
+      alert('"' + this.currentFolder + '" folder unpinned!');
+    }
+    this.savePins();
+    this.render(false);
+  }
+
+  togglePinSubfolder() {
+    if (!this.currentFolder) return alert("Select a folder first.");
+    if (!this.currentSubfolder || this.currentSubfolder === "__direct__") return alert("Select a subfolder first (not — or none).");
+    // Make sure subs object exists without touching folders
+    if (!this.pins.subs) this.pins.subs = {};
+    if (!this.pins.subs[this.currentFolder]) this.pins.subs[this.currentFolder] = [];
+    const pins = this.pins.subs[this.currentFolder];
+    const idx = pins.indexOf(this.currentSubfolder);
+    if (idx === -1) {
+      pins.push(this.currentSubfolder);
+      alert('"' + this.currentSubfolder + '" subfolder pinned!');
+    } else {
+      pins.splice(idx, 1);
+      alert('"' + this.currentSubfolder + '" subfolder unpinned!');
+    }
+    this.savePins();
+    this.render(false);
+  }
+
+  savePins() {
+    this.pinsRef.set(this.pins);
+  }
 
   renameSection() {
     const current = sectionsConfig[this.sectionIndex].title;
@@ -473,26 +861,6 @@ class BookmarkManager {
 
   // ── Bookmark CRUD ───────────────────────────────────────────────────────────
 
-  buildMenu() {
-    const actions = [
-      ["Add Folder", () => this.addFolder()],
-      ["Delete Folder", () => this.deleteFolder()],
-      ["Add Subfolder", () => this.addSubfolder()],
-      ["Delete Subfolder", () => this.deleteSubfolder()],
-      ["Add Bookmark", () => this.addBookmark()],
-      ["Edit Bookmark", () => this.editBookmark()],
-      ["Delete Bookmark", () => this.deleteBookmark()]
-    ];
-
-    this.actionsDiv.innerHTML = "";
-    actions.forEach(([label, action]) => {
-      const btn = document.createElement("button");
-      btn.textContent = label;
-      btn.onclick = action;
-      this.actionsDiv.appendChild(btn);
-    });
-  }
-
   render(save = true) {
     if (this.data === null) return; // not yet loaded
     this.renderTabs();
@@ -503,17 +871,25 @@ class BookmarkManager {
 
   renderTabs() {
     this.tabsDiv.innerHTML = "";
-    const folders = Object.keys(this.data).filter(k => k !== "__placeholder__");
+    const internalKeys = ["__placeholder__", "__pins__"];
+    const folders = Object.keys(this.data).filter(k => !internalKeys.includes(k));
     if (folders.length === 0) return;
 
-    // Auto-select first folder if none selected or current no longer exists
-    if (!this.currentFolder || !folders.includes(this.currentFolder)) {
-      this.currentFolder = folders[0];
+    const pins = this.pins.folders || [];
+
+    // Pinned first, then rest alphabetically
+    const pinned = folders.filter(f => pins.includes(f)).sort((a, b) => a.localeCompare(b));
+    const unpinned = folders.filter(f => !pins.includes(f)).sort((a, b) => a.localeCompare(b));
+    const sorted = [...pinned, ...unpinned];
+
+    if (!this.currentFolder || !sorted.includes(this.currentFolder)) {
+      this.currentFolder = sorted[0];
     }
 
-    folders.forEach(folder => {
+    sorted.forEach(folder => {
       const btn = document.createElement("button");
-      btn.textContent = folder;
+      const isPinned = pins.includes(folder);
+      btn.textContent = (isPinned ? "📌 " : "") + folder;
       if (folder === this.currentFolder) btn.classList.add("active");
       btn.onclick = () => {
         this.currentFolder = folder;
@@ -531,18 +907,23 @@ class BookmarkManager {
 
     const folderData = this.data[this.currentFolder];
     const internalKeys = ["__empty__", "__direct__"];
+    const subPins = (this.pins.subs && this.pins.subs[this.currentFolder]) || [];
 
     // Real subfolders
     const subs = Object.keys(folderData).filter(s => !internalKeys.includes(s));
 
-    // Build tab list
+    // Pinned first, then rest alphabetically
+    const pinnedSubs = subs.filter(s => subPins.includes(s)).sort((a, b) => a.localeCompare(b));
+    const unpinnedSubs = subs.filter(s => !subPins.includes(s)).sort((a, b) => a.localeCompare(b));
+    const sortedSubs = [...pinnedSubs, ...unpinnedSubs];
+
+    // Build tab list: direct first if has bookmarks, then sorted subs
     const tabs = [];
-    // Show Direct tab if it has real bookmarks
     const directLinks = folderData["__direct__"];
     if (Array.isArray(directLinks) && directLinks.some(l => typeof l === "object" && l !== null && !l.__placeholder__)) {
       tabs.push("__direct__");
     }
-    tabs.push(...subs);
+    tabs.push(...sortedSubs);
 
     if (tabs.length === 0) {
       this.currentSubfolder = null;
@@ -554,8 +935,9 @@ class BookmarkManager {
     }
 
     tabs.forEach(sub => {
+      const isPinned = subPins.includes(sub);
       const btn = document.createElement("button");
-      btn.textContent = sub === "__direct__" ? "—" : sub;
+      btn.textContent = sub === "__direct__" ? "—" : (isPinned ? "📌 " : "") + sub;
       if (sub === this.currentSubfolder) btn.classList.add("active");
       btn.onclick = () => {
         this.currentSubfolder = sub;
@@ -587,7 +969,7 @@ class BookmarkManager {
       favicon.src =
         "https://www.google.com/s2/favicons?sz=32&domain_url=" + link.url;
 
-      favicon.onclick = () => {
+      div.onclick = () => {
         this.selectedBookmarkIndex = realIndex;
         this.bookmarksDiv
           .querySelectorAll(".bookmark-item")
@@ -600,6 +982,7 @@ class BookmarkManager {
       a.target = "_blank";
       a.textContent = link.name;
 
+      favicon.style.pointerEvents = "none";
       div.appendChild(favicon);
       div.appendChild(a);
       this.bookmarksDiv.appendChild(div);
@@ -716,6 +1099,96 @@ class BookmarkManager {
       this.render();
     }
   }
+}
+
+// ─── Data Manager ────────────────────────────────────────────────────────────
+document.getElementById("dataManagerBtn").addEventListener("click", () => {
+  openDataManager();
+});
+
+document.getElementById("dataManagerClose").addEventListener("click", () => {
+  document.getElementById("dataManagerOverlay").style.display = "none";
+});
+
+document.getElementById("dataManagerOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("dataManagerOverlay")) {
+    document.getElementById("dataManagerOverlay").style.display = "none";
+  }
+});
+
+function openDataManager() {
+  const list = document.getElementById("dataManagerList");
+  list.innerHTML = "<div class='dm-empty'>Loading...</div>";
+  document.getElementById("dataManagerOverlay").style.display = "flex";
+
+  // Fetch all bookmark data keys from Firebase
+  database.ref("bookmarkManagers").once("value", snapshot => {
+    const val = snapshot.val();
+    list.innerHTML = "";
+
+    if (!val || Object.keys(val).length === 0) {
+      list.innerHTML = "<div class='dm-empty'>No bookmark data found in Firebase.</div>";
+      return;
+    }
+
+    Object.keys(val).forEach(dbKey => {
+      const data = val[dbKey];
+
+      // Count folders, subfolders, bookmarks
+      const internalKeys = ["__pins__", "__placeholder__", "__empty__", "__direct__"];
+      const folders = Object.keys(data).filter(k => !internalKeys.includes(k));
+      let subCount = 0, bmCount = 0;
+      folders.forEach(f => {
+        const folderData = data[f];
+        const subs = Object.keys(folderData).filter(s => !internalKeys.includes(s));
+        subCount += subs.length;
+        subs.forEach(s => {
+          const links = folderData[s];
+          if (Array.isArray(links)) {
+            bmCount += links.filter(l => typeof l === "object" && l !== null && !l.__placeholder__).length;
+          }
+        });
+        // Count direct bookmarks
+        if (folderData["__direct__"] && Array.isArray(folderData["__direct__"])) {
+          bmCount += folderData["__direct__"].filter(l => typeof l === "object" && l !== null && !l.__placeholder__).length;
+        }
+      });
+
+      // Find matching section title if any
+      const matchedSection = sectionsConfig.find(s => s.dbKey === dbKey);
+      const displayTitle = matchedSection ? matchedSection.title : dbKey;
+      const isOrphan = !matchedSection;
+
+      const item = document.createElement("div");
+      item.className = "dm-item";
+      item.innerHTML = `
+        <div class="dm-item-info">
+          <span class="dm-item-title">${displayTitle} ${isOrphan ? '<span style="color:#e90;font-size:11px;">(orphan)</span>' : ''}</span>
+          <span class="dm-item-meta">${folders.length} folder(s) · ${subCount} subfolder(s) · ${bmCount} bookmark(s)</span>
+        </div>
+        <button class="dm-delete-btn" data-key="${dbKey}">🗑 Delete</button>
+      `;
+
+      item.querySelector(".dm-delete-btn").addEventListener("click", () => {
+        const label = isOrphan ? dbKey : displayTitle;
+        if (!confirm(`Permanently delete all data for "${label}"?`)) return;
+        database.ref("bookmarkManagers/" + dbKey).remove();
+        database.ref("bookmarkPins/" + dbKey).remove();
+        // Also remove from sectionsConfig if present
+        if (matchedSection) {
+          const idx = sectionsConfig.indexOf(matchedSection);
+          if (idx !== -1) sectionsConfig.splice(idx, 1);
+          saveSectionsConfig();
+        }
+        item.remove();
+        if (list.children.length === 0) {
+          list.innerHTML = "<div class='dm-empty'>No bookmark data found in Firebase.</div>";
+        }
+      });
+
+      list.appendChild(item);
+    });
+  });
 }
 
 // ─── Add Section ──────────────────────────────────────────────────────────────
