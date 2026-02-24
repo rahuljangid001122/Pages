@@ -90,17 +90,22 @@ body {
 }
 
 .actions button {
-  padding: 12px 18px;
-  border: none;
-  background: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
   cursor: pointer;
   flex: 0 0 auto;
-  font-size: 16px;
+  font-size: 13px;
   display: none;
+  margin: 8px 4px;
+  color: #444;
+  white-space: nowrap;
 }
 
 .actions button:hover {
-  background: #ddd;
+  background: #e8e8e8;
+  border-color: #aaa;
 }
 
 .tabs, .subtabs {
@@ -210,10 +215,7 @@ body {
   margin-right: auto;
 }
 
-#lockStatus {
-  font-size: 14px;
-  color: #888;
-}
+
 
 #lockBtn {
   padding: 6px 14px;
@@ -234,8 +236,7 @@ body {
 
 <div id="lockBar">
   <img src="/Pages/favicon.png" style="width:32px;height:32px;border-radius:6px;object-fit:cover;"> <span id="pageTitle">RJ's Bookmark Manager</span>
-  <span id="lockStatus">🔒 Locked</span>
-  <button id="lockBtn">Unlock</button>
+  <button id="lockBtn">🔒</button>
 </div>
 
 <div id="sectionsContainer"></div>
@@ -284,18 +285,14 @@ function showEditButtons(visible) {
 
 document.getElementById("lockBtn").addEventListener("click", () => {
   if (isUnlocked) {
-    // Lock
     isUnlocked = false;
-    document.getElementById("lockStatus").textContent = "🔒 Locked";
-    document.getElementById("lockBtn").textContent = "Unlock";
+    document.getElementById("lockBtn").textContent = "🔒";
     showEditButtons(false);
   } else {
-    // Unlock
     const input = prompt("Enter password:");
     if (input === CORRECT_PASSWORD) {
       isUnlocked = true;
-      document.getElementById("lockStatus").textContent = "🔓 Unlocked";
-      document.getElementById("lockBtn").textContent = "Lock";
+      document.getElementById("lockBtn").textContent = "🔓";
       showEditButtons(true);
     } else if (input !== null) {
       alert("Incorrect password.");
@@ -506,7 +503,7 @@ class BookmarkManager {
 
   renderTabs() {
     this.tabsDiv.innerHTML = "";
-    const folders = Object.keys(this.data);
+    const folders = Object.keys(this.data).filter(k => k !== "__placeholder__");
     if (folders.length === 0) return;
 
     // Auto-select first folder if none selected or current no longer exists
@@ -532,7 +529,7 @@ class BookmarkManager {
     this.subtabsDiv.innerHTML = "";
     if (!this.currentFolder) return;
 
-    const subs = Object.keys(this.data[this.currentFolder]);
+    const subs = Object.keys(this.data[this.currentFolder]).filter(s => s !== "__placeholder__");
     if (subs.length === 0) return;
 
     // Auto-select first subfolder if none selected or current no longer exists
@@ -558,9 +555,15 @@ class BookmarkManager {
     this.bookmarksDiv.innerHTML = "";
     if (!this.currentSubfolder) return;
 
-    const links = this.data[this.currentFolder][this.currentSubfolder];
+    const allLinks = this.data[this.currentFolder][this.currentSubfolder];
+    // Map with real indices before filtering
+    const links = Array.isArray(allLinks)
+      ? allLinks
+          .map((l, realIndex) => ({ link: l, realIndex }))
+          .filter(({ link }) => typeof link === "object" && link !== null && !link.__placeholder__)
+      : [];
 
-    links.forEach((link, index) => {
+    links.forEach(({ link, realIndex }) => {
       const div = document.createElement("div");
       div.className = "bookmark-item";
 
@@ -569,7 +572,7 @@ class BookmarkManager {
         "https://www.google.com/s2/favicons?sz=32&domain_url=" + link.url;
 
       favicon.onclick = () => {
-        this.selectedBookmarkIndex = index;
+        this.selectedBookmarkIndex = realIndex;
         this.bookmarksDiv
           .querySelectorAll(".bookmark-item")
           .forEach(el => el.classList.remove("selected"));
@@ -590,7 +593,7 @@ class BookmarkManager {
   addFolder() {
     let name = this.sanitizeName(prompt("Folder name:"));
     if (!name || this.data[name]) return;
-    this.data[name] = {};
+    this.data[name] = { "__empty__": true };
     this.currentFolder = name;
     this.currentSubfolder = null;
     this.render();
@@ -611,8 +614,12 @@ class BookmarkManager {
     if (!this.currentFolder) return;
     let name = this.sanitizeName(prompt("Subfolder name:"));
     if (!name || this.data[this.currentFolder][name]) return;
-    this.data[this.currentFolder][name] = [];
+    this.data[this.currentFolder][name] = [{ "__placeholder__": true }];
     this.currentSubfolder = name;
+    // Remove folder's empty placeholder now it has a subfolder
+    if (this.data[this.currentFolder]["__empty__"]) {
+      delete this.data[this.currentFolder]["__empty__"];
+    }
     this.render();
   }
 
@@ -631,6 +638,9 @@ class BookmarkManager {
     const name = prompt("Bookmark name:");
     const url = prompt("Bookmark URL:");
     if (!name || !url) return;
+    // Remove placeholder if present
+    this.data[this.currentFolder][this.currentSubfolder] = 
+      this.data[this.currentFolder][this.currentSubfolder].filter(l => l !== "__empty__");
     this.data[this.currentFolder][this.currentSubfolder].push({ name, url });
     this.render();
   }
@@ -663,6 +673,10 @@ class BookmarkManager {
 
     if (confirm("Delete bookmark?")) {
       links.splice(this.selectedBookmarkIndex, 1);
+      // If no bookmarks left, add placeholder so Firebase keeps the subfolder
+      if (links.length === 0) {
+        this.data[this.currentFolder][this.currentSubfolder] = ["__empty__"];
+      }
       this.selectedBookmarkIndex = null;
       this.render();
     }
