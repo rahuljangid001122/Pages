@@ -529,17 +529,33 @@ class BookmarkManager {
     this.subtabsDiv.innerHTML = "";
     if (!this.currentFolder) return;
 
-    const subs = Object.keys(this.data[this.currentFolder]).filter(s => s !== "__placeholder__");
-    if (subs.length === 0) return;
+    const folderData = this.data[this.currentFolder];
+    const internalKeys = ["__empty__", "__direct__"];
 
-    // Auto-select first subfolder if none selected or current no longer exists
-    if (!this.currentSubfolder || !subs.includes(this.currentSubfolder)) {
-      this.currentSubfolder = subs[0];
+    // Real subfolders
+    const subs = Object.keys(folderData).filter(s => !internalKeys.includes(s));
+
+    // Build tab list
+    const tabs = [];
+    // Show Direct tab if it has real bookmarks
+    const directLinks = folderData["__direct__"];
+    if (Array.isArray(directLinks) && directLinks.some(l => typeof l === "object" && l !== null && !l.__placeholder__)) {
+      tabs.push("__direct__");
+    }
+    tabs.push(...subs);
+
+    if (tabs.length === 0) {
+      this.currentSubfolder = null;
+      return;
     }
 
-    subs.forEach(sub => {
+    if (!this.currentSubfolder || !tabs.includes(this.currentSubfolder)) {
+      this.currentSubfolder = tabs[0];
+    }
+
+    tabs.forEach(sub => {
       const btn = document.createElement("button");
-      btn.textContent = sub;
+      btn.textContent = sub === "__direct__" ? "—" : sub;
       if (sub === this.currentSubfolder) btn.classList.add("active");
       btn.onclick = () => {
         this.currentSubfolder = sub;
@@ -553,10 +569,10 @@ class BookmarkManager {
 
   renderBookmarks() {
     this.bookmarksDiv.innerHTML = "";
-    if (!this.currentSubfolder) return;
+    if (!this.currentFolder || !this.currentSubfolder) return;
 
     const allLinks = this.data[this.currentFolder][this.currentSubfolder];
-    // Map with real indices before filtering
+    // Map with real indices before filtering out placeholders
     const links = Array.isArray(allLinks)
       ? allLinks
           .map((l, realIndex) => ({ link: l, realIndex }))
@@ -634,14 +650,26 @@ class BookmarkManager {
   }
 
   addBookmark() {
-    if (!this.currentSubfolder) return;
+    if (!this.currentFolder) return alert("Select a folder first.");
     const name = prompt("Bookmark name:");
     const url = prompt("Bookmark URL:");
     if (!name || !url) return;
-    // Remove placeholder if present
-    this.data[this.currentFolder][this.currentSubfolder] = 
-      this.data[this.currentFolder][this.currentSubfolder].filter(l => l !== "__empty__");
-    this.data[this.currentFolder][this.currentSubfolder].push({ name, url });
+
+    // Add directly to folder if no subfolder selected, using __direct__ key
+    const target = this.currentSubfolder || "__direct__";
+    if (!this.data[this.currentFolder][target]) {
+      this.data[this.currentFolder][target] = [];
+    }
+    // Remove any placeholder entries
+    this.data[this.currentFolder][target] =
+      this.data[this.currentFolder][target].filter(l => typeof l === "object" && l !== null && !l.__placeholder__);
+    this.data[this.currentFolder][target].push({ name, url });
+    // Remove folder-level __empty__ placeholder
+    if (this.data[this.currentFolder]["__empty__"]) {
+      delete this.data[this.currentFolder]["__empty__"];
+    }
+    // Set currentSubfolder so it shows up selected
+    this.currentSubfolder = target;
     this.render();
   }
 
@@ -649,8 +677,9 @@ class BookmarkManager {
     if (this.selectedBookmarkIndex === null)
       return alert("Select a bookmark first.");
 
-    const links = this.data[this.currentFolder][this.currentSubfolder];
-    if (this.selectedBookmarkIndex >= links.length)
+    const sub = this.currentSubfolder || "__direct__";
+    const links = this.data[this.currentFolder][sub];
+    if (!links || this.selectedBookmarkIndex >= links.length)
       return alert("Invalid selection. Please select again.");
 
     const link = links[this.selectedBookmarkIndex];
@@ -667,15 +696,21 @@ class BookmarkManager {
     if (this.selectedBookmarkIndex === null)
       return alert("Select a bookmark first.");
 
-    const links = this.data[this.currentFolder][this.currentSubfolder];
-    if (this.selectedBookmarkIndex >= links.length)
+    const sub = this.currentSubfolder || "__direct__";
+    const links = this.data[this.currentFolder][sub];
+    if (!links || this.selectedBookmarkIndex >= links.length)
       return alert("Invalid selection. Please select again.");
 
     if (confirm("Delete bookmark?")) {
       links.splice(this.selectedBookmarkIndex, 1);
-      // If no bookmarks left, add placeholder so Firebase keeps the subfolder
+      // If no bookmarks left, restore placeholder so Firebase keeps the key
       if (links.length === 0) {
-        this.data[this.currentFolder][this.currentSubfolder] = ["__empty__"];
+        if (sub === "__direct__") {
+          delete this.data[this.currentFolder]["__direct__"];
+          this.currentSubfolder = null;
+        } else {
+          this.data[this.currentFolder][sub] = [{ "__placeholder__": true }];
+        }
       }
       this.selectedBookmarkIndex = null;
       this.render();
