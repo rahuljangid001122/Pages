@@ -710,6 +710,8 @@ class BookmarkManager {
     this.selectedBookmarkIndex = null;
     this._listener = null;
     this._pinsListener = null;
+    this._dataLoaded = false;
+    this._pinsLoaded = false;
 
     this.pinsRef = database.ref("bookmarkPins/" + dbKey);
 
@@ -726,6 +728,10 @@ class BookmarkManager {
   listen() {
     this._listener = this.dbRef.on("value", snapshot => {
       this.data = snapshot.val() || {};
+      this._dataLoaded = true;
+      if (this._pinsLoaded) {
+        this.autoSelectFirst();
+      }
       this.render(false);
     });
   }
@@ -737,8 +743,57 @@ class BookmarkManager {
         folders: (val && Array.isArray(val.folders)) ? val.folders : [],
         subs: (val && val.subs && typeof val.subs === "object") ? val.subs : {}
       };
-      this.render(false);
+      this._pinsLoaded = true;
+      // Always run autoSelectFirst and render when pins update
+      if (this._dataLoaded) {
+        this.autoSelectFirst();
+        this.render(false);
+      }
     });
+
+    // Fallback: if pins don't exist in Firebase, listener still fires with null
+    // but just in case, force pinsLoaded after short delay
+    setTimeout(() => {
+      if (!this._pinsLoaded) {
+        this._pinsLoaded = true;
+        if (this._dataLoaded) {
+          this.autoSelectFirst();
+          this.render(false);
+        }
+      }
+    }, 2000);
+  }
+
+  autoSelectFirst() {
+    if (!this.data) return;
+    const internalKeys = ["__placeholder__", "__pins__"];
+    const folders = Object.keys(this.data).filter(k => !internalKeys.includes(k));
+    if (folders.length === 0) return;
+
+    const pins = this.pins.folders || [];
+    const pinned = pins.filter(f => folders.includes(f));
+    const unpinned = folders.filter(f => !pins.includes(f)).sort((a, b) => a.localeCompare(b));
+    const sorted = [...pinned, ...unpinned];
+
+    // Auto-select first folder if not set
+    if (!this.currentFolder || !sorted.includes(this.currentFolder)) {
+      this.currentFolder = sorted[0];
+    }
+
+    // Auto-select first subfolder
+    const folderData = this.data[this.currentFolder];
+    if (folderData) {
+      const internalSubKeys = ["__empty__", "__direct__"];
+      const subs = Object.keys(folderData).filter(s => !internalSubKeys.includes(s));
+      const subPins = (this.pins.subs && this.pins.subs[this.currentFolder]) || [];
+      const pinnedSubs = subPins.filter(s => subs.includes(s));
+      const unpinnedSubs = subs.filter(s => !subPins.includes(s)).sort((a, b) => a.localeCompare(b));
+      const sortedSubs = [...pinnedSubs, ...unpinnedSubs];
+
+      if (!this.currentSubfolder || !sortedSubs.includes(this.currentSubfolder)) {
+        this.currentSubfolder = sortedSubs.length > 0 ? sortedSubs[0] : (folderData["__direct__"] ? "__direct__" : null);
+      }
+    }
   }
 
   save() {
@@ -886,8 +941,8 @@ class BookmarkManager {
 
     const pins = this.pins.folders || [];
 
-    // Pinned first, then rest alphabetically
-    const pinned = folders.filter(f => pins.includes(f)).sort((a, b) => a.localeCompare(b));
+    // Pinned in pin order, unpinned alphabetically after
+    const pinned = pins.filter(f => folders.includes(f));
     const unpinned = folders.filter(f => !pins.includes(f)).sort((a, b) => a.localeCompare(b));
     const sorted = [...pinned, ...unpinned];
 
@@ -922,7 +977,7 @@ class BookmarkManager {
     const subs = Object.keys(folderData).filter(s => !internalKeys.includes(s));
 
     // Pinned first, then rest alphabetically
-    const pinnedSubs = subs.filter(s => subPins.includes(s)).sort((a, b) => a.localeCompare(b));
+    const pinnedSubs = subPins.filter(s => subs.includes(s));
     const unpinnedSubs = subs.filter(s => !subPins.includes(s)).sort((a, b) => a.localeCompare(b));
     const sortedSubs = [...pinnedSubs, ...unpinnedSubs];
 
