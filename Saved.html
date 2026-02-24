@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Saved</title>
+<title>RJ's Bookmark Manager</title>
 <link rel="icon" href="/Pages/favicon.png" />    
   
 <style>
@@ -20,15 +20,67 @@ body {
   background: white;
 }
 
-.manager-title {
+.manager-title-bar {
+  display: flex;
+  align-items: center;
   padding: 12px 16px;
-  font-size: 20px;
-  font-weight: bold;
   border-bottom: 1px solid #ddd;
   background: #f5f5f5;
+  gap: 10px;
 }
 
-/* NEW ACTION BAR */
+.manager-title {
+  font-size: 20px;
+  font-weight: bold;
+  flex: 1;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+  cursor: pointer;
+}
+
+.section-btns {
+  margin-left: auto;
+  display: none;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.manager-title-edit {
+  font-size: 20px;
+  font-weight: bold;
+  flex: 1;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 2px 8px;
+  outline: none;
+}
+
+.section-action-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 10px;
+  color: #555;
+  display: none;
+}
+
+
+
+.section-action-btn:hover {
+  background: #e0e0e0;
+}
+
+.section-action-btn.danger:hover {
+  background: #fde;
+  border-color: #f99;
+  color: #c00;
+}
+
 .actions {
   display: flex;
   overflow-x: auto;
@@ -44,6 +96,7 @@ body {
   cursor: pointer;
   flex: 0 0 auto;
   font-size: 16px;
+  display: none;
 }
 
 .actions button:hover {
@@ -110,14 +163,84 @@ body {
   font-size: 20px;
   font-weight: bold;
 }
+
+#addSectionBtn {
+  display: none;
+  margin: 0 30px 30px 30px;
+  padding: 12px 24px;
+  font-size: 16px;
+  background: #f5f5f5;
+  border: 1px dashed #bbb;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #555;
+  width: calc(100% - 60px);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+#addSectionBtn:hover {
+  background: #e8e8e8;
+  color: #222;
+}
+
+#emptyMsg {
+  text-align: center;
+  color: #aaa;
+  padding: 40px 30px 10px 30px;
+  font-size: 16px;
+  display: none;
+}
+
+/* Lock bar at top */
+#lockBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 30px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+  gap: 10px;
+}
+
+#pageTitle {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-right: auto;
+}
+
+#lockBar span {
+  font-size: 14px;
+  color: #888;
+}
+
+#lockBtn {
+  padding: 6px 14px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+#lockBtn:hover {
+  background: #e8e8e8;
+}
 </style>
 </head>
 
 <body>
 
-<div id="workManager" class="manager-section"></div>
-<div id="researchManager" class="manager-section"></div>
-<div id="personalManager" class="manager-section"></div>
+<div id="lockBar">
+  <img src="/Pages/favicon.png" style="width:32px;height:32px;border-radius:6px;object-fit:cover;"> <span id="pageTitle">RJ's Bookmark Manager</span>
+  <span id="lockStatus">🔒 Locked</span>
+  <button id="lockBtn">Unlock</button>
+</div>
+
+<div id="sectionsContainer"></div>
+<p id="emptyMsg">No sections yet. Add one below!</p>
+<button id="addSectionBtn">+ Add New Section</button>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -131,36 +254,142 @@ const firebaseConfig = {
   projectId: "my-todo-2e111",
   storageBucket: "my-todo-2e111.appspot.com",
   messagingSenderId: "765517702108",
-  appId: "1:7655176208:web:2dfe7d6205040cfd2ea519"
+  appId: "1:765517702108:web:2dfe7d6205040cfd2ea519"
 };
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+const sectionsRef = database.ref("sectionConfig");
+
+let sectionsConfig = [];
+let managers = [];
+
+// ─── Session Lock ─────────────────────────────────────────────────────────────
+const CORRECT_PASSWORD = "6409";
+let isUnlocked = false;
+
+function showEditButtons(visible) {
+  document.querySelectorAll(".actions button").forEach(btn => {
+    btn.style.display = visible ? "inline-block" : "none";
+  });
+  document.querySelectorAll(".section-action-btn").forEach(btn => {
+    btn.style.display = visible ? "inline-block" : "none";
+  });
+  document.querySelectorAll(".section-btns").forEach(div => {
+    div.style.display = visible ? "flex" : "none";
+  });
+  document.getElementById("addSectionBtn").style.display = visible ? "block" : "none";
+}
+
+document.getElementById("lockBtn").addEventListener("click", () => {
+  if (isUnlocked) {
+    // Lock
+    isUnlocked = false;
+    document.getElementById("lockStatus").textContent = "🔒 Locked";
+    document.getElementById("lockBtn").textContent = "Unlock";
+    showEditButtons(false);
+  } else {
+    // Unlock
+    const input = prompt("Enter password:");
+    if (input === CORRECT_PASSWORD) {
+      isUnlocked = true;
+      document.getElementById("lockStatus").textContent = "🔓 Unlocked";
+      document.getElementById("lockBtn").textContent = "Lock";
+      showEditButtons(true);
+    } else if (input !== null) {
+      alert("Incorrect password.");
+    }
+  }
+});
+
+// ─── Listen to section config from Firebase ───────────────────────────────────
+sectionsRef.on("value", snapshot => {
+  const val = snapshot.val();
+  let newConfig = [];
+  if (val) {
+    newConfig = Object.values(val).sort((a, b) => a.order - b.order);
+  }
+  // Only re-render if sections actually changed (added, removed, renamed, reordered)
+  const oldSig = JSON.stringify(sectionsConfig.map(s => s.id + s.title + s.order));
+  const newSig = JSON.stringify(newConfig.map(s => s.id + s.title + s.order));
+  sectionsConfig = newConfig;
+  if (oldSig !== newSig) {
+    renderAllSections();
+  }
+});
+
+function saveSectionsConfig() {
+  const obj = {};
+  sectionsConfig.forEach((sec, i) => {
+    obj[sec.id] = { id: sec.id, dbKey: sec.dbKey, title: sec.title, order: i };
+  });
+  sectionsRef.set(obj);
+}
+
+// ─── Render all sections ──────────────────────────────────────────────────────
+function renderAllSections() {
+  const container = document.getElementById("sectionsContainer");
+  const emptyMsg = document.getElementById("emptyMsg");
+
+  managers.forEach(m => m.destroy && m.destroy());
+  managers = [];
+  container.innerHTML = "";
+
+  if (sectionsConfig.length === 0) {
+    emptyMsg.style.display = "block";
+  } else {
+    emptyMsg.style.display = "none";
+    sectionsConfig.forEach((sec, idx) => {
+      const div = document.createElement("div");
+      div.id = "sec_" + sec.id;
+      div.className = "manager-section";
+      container.appendChild(div);
+
+      const mgr = new BookmarkManager("sec_" + sec.id, sec.dbKey, sec.title, idx);
+      managers.push(mgr);
+    });
+  }
+
+  // Re-apply lock state after re-render
+  showEditButtons(isUnlocked);
+}
+
+// ─── BookmarkManager ──────────────────────────────────────────────────────────
 class BookmarkManager {
-  constructor(containerId, dbKey, title) {
+  constructor(containerId, dbKey, title, sectionIndex) {
     this.container = document.getElementById(containerId);
+    this.dbKey = dbKey;
     this.dbRef = database.ref("bookmarkManagers/" + dbKey);
     this.title = title;
+    this.sectionIndex = sectionIndex;
     this.MAX_NAME_LENGTH = 20;
 
-    this.data = { "Favorites": { "Default": [] } };
+    this.data = null; // null means not yet loaded
     this.currentFolder = null;
     this.currentSubfolder = null;
     this.selectedBookmarkIndex = null;
+    this._listener = null;
 
     this.buildLayout();
     this.listen();
   }
 
+  destroy() {
+    if (this._listener) {
+      this.dbRef.off("value", this._listener);
+    }
+  }
+
   listen() {
-    this.dbRef.on("value", snapshot => {
-      this.data = snapshot.val() || { "Favourites": { "Default": [] } };
+    this._listener = this.dbRef.on("value", snapshot => {
+      this.data = snapshot.val() || {};
       this.render(false);
     });
   }
 
   save() {
+    if (this.data === null) return; // not yet loaded, never overwrite
     this.dbRef.set(this.data);
   }
 
@@ -175,7 +404,13 @@ class BookmarkManager {
 
   buildLayout() {
     this.container.innerHTML = `
-      <div class="manager-title">${this.title}</div>
+      <div class="manager-title-bar">
+        <span class="manager-title">${this.title}</span>
+        <div class="section-btns">
+          <button class="section-action-btn" data-action="rename" title="Rename section">✏️</button>
+          <button class="section-action-btn danger" data-action="delete-section" title="Delete section">🗑</button>
+        </div>
+      </div>
       <div class="actions"></div>
       <div class="tabs"></div>
       <div class="subtabs"></div>
@@ -186,9 +421,43 @@ class BookmarkManager {
     this.tabsDiv = this.container.querySelector(".tabs");
     this.subtabsDiv = this.container.querySelector(".subtabs");
     this.bookmarksDiv = this.container.querySelector(".bookmarks");
+    this.titleEl = this.container.querySelector(".manager-title");
+
+    // Show full title on click if truncated
+    this.titleEl.addEventListener("click", () => {
+      if (this.titleEl.scrollWidth > this.titleEl.clientWidth) {
+        alert(sectionsConfig[this.sectionIndex].title);
+      }
+    });
+
+    this.container.querySelector("[data-action='rename']")
+      .addEventListener("click", () => this.renameSection());
+
+    this.container.querySelector("[data-action='delete-section']")
+      .addEventListener("click", () => this.deleteSection());
 
     this.buildMenu();
   }
+
+  // ── Section management ──────────────────────────────────────────────────────
+
+  renameSection() {
+    const current = sectionsConfig[this.sectionIndex].title;
+    const newTitle = prompt("Rename section:", current);
+    if (!newTitle || !newTitle.trim() || newTitle.trim() === current) return;
+    sectionsConfig[this.sectionIndex].title = newTitle.trim();
+    saveSectionsConfig();
+    this.titleEl.textContent = newTitle.trim();
+  }
+
+  deleteSection() {
+    const title = sectionsConfig[this.sectionIndex].title;
+    if (!confirm(`Delete section "${title}"?\n\nNote: Bookmark data in Firebase will NOT be deleted.`)) return;
+    sectionsConfig.splice(this.sectionIndex, 1);
+    saveSectionsConfig();
+  }
+
+  // ── Bookmark CRUD ───────────────────────────────────────────────────────────
 
   buildMenu() {
     const actions = [
@@ -219,14 +488,22 @@ class BookmarkManager {
 
   renderTabs() {
     this.tabsDiv.innerHTML = "";
-    Object.keys(this.data).forEach(folder => {
+    const folders = Object.keys(this.data);
+    if (folders.length === 0) return;
+
+    // Auto-select first folder if none selected or current no longer exists
+    if (!this.currentFolder || !folders.includes(this.currentFolder)) {
+      this.currentFolder = folders[0];
+    }
+
+    folders.forEach(folder => {
       const btn = document.createElement("button");
       btn.textContent = folder;
-      if (!this.currentFolder) this.currentFolder = folder;
       if (folder === this.currentFolder) btn.classList.add("active");
       btn.onclick = () => {
         this.currentFolder = folder;
         this.currentSubfolder = null;
+        this.selectedBookmarkIndex = null;
         this.render();
       };
       this.tabsDiv.appendChild(btn);
@@ -237,13 +514,22 @@ class BookmarkManager {
     this.subtabsDiv.innerHTML = "";
     if (!this.currentFolder) return;
 
-    Object.keys(this.data[this.currentFolder]).forEach(sub => {
+    const subs = Object.keys(this.data[this.currentFolder]);
+    if (subs.length === 0) return;
+
+    // Auto-select first subfolder if none selected or current no longer exists
+    if (!this.currentSubfolder || !subs.includes(this.currentSubfolder)) {
+      this.currentSubfolder = subs[0];
+    }
+
+    subs.forEach(sub => {
       const btn = document.createElement("button");
       btn.textContent = sub;
-      if (!this.currentSubfolder) this.currentSubfolder = sub;
       if (sub === this.currentSubfolder) btn.classList.add("active");
       btn.onclick = () => {
         this.currentSubfolder = sub;
+        this.selectedBookmarkIndex = null;
+        this.renderSubtabs();
         this.renderBookmarks();
       };
       this.subtabsDiv.appendChild(btn);
@@ -298,6 +584,7 @@ class BookmarkManager {
       delete this.data[this.currentFolder];
       this.currentFolder = null;
       this.currentSubfolder = null;
+      this.selectedBookmarkIndex = null;
       this.render();
     }
   }
@@ -316,6 +603,7 @@ class BookmarkManager {
     if (confirm("Delete subfolder?")) {
       delete this.data[this.currentFolder][this.currentSubfolder];
       this.currentSubfolder = null;
+      this.selectedBookmarkIndex = null;
       this.render();
     }
   }
@@ -333,11 +621,11 @@ class BookmarkManager {
     if (this.selectedBookmarkIndex === null)
       return alert("Select a bookmark first.");
 
-    const link =
-      this.data[this.currentFolder][this.currentSubfolder][
-        this.selectedBookmarkIndex
-      ];
+    const links = this.data[this.currentFolder][this.currentSubfolder];
+    if (this.selectedBookmarkIndex >= links.length)
+      return alert("Invalid selection. Please select again.");
 
+    const link = links[this.selectedBookmarkIndex];
     const name = prompt("New name:", link.name);
     const url = prompt("New URL:", link.url);
     if (!name || !url) return;
@@ -351,21 +639,32 @@ class BookmarkManager {
     if (this.selectedBookmarkIndex === null)
       return alert("Select a bookmark first.");
 
+    const links = this.data[this.currentFolder][this.currentSubfolder];
+    if (this.selectedBookmarkIndex >= links.length)
+      return alert("Invalid selection. Please select again.");
+
     if (confirm("Delete bookmark?")) {
-      this.data[this.currentFolder][this.currentSubfolder].splice(
-        this.selectedBookmarkIndex,
-        1
-      );
+      links.splice(this.selectedBookmarkIndex, 1);
       this.selectedBookmarkIndex = null;
       this.render();
     }
   }
 }
 
-new BookmarkManager("workManager", "workBookmarks", "Work Manager");
-new BookmarkManager("researchManager", "researchBookmarks", "Research Manager");
-new BookmarkManager("personalManager", "personalBookmarks", "Personal Manager");
+// ─── Add Section ──────────────────────────────────────────────────────────────
+document.getElementById("addSectionBtn").addEventListener("click", () => {
+  const title = prompt("Section title:");
+  if (!title || !title.trim()) return;
 
+  const cleanTitle = title.trim();
+  const base = cleanTitle.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+  const uid = Date.now().toString();
+  const id = base + "_" + uid;
+  const dbKey = base + "Bookmarks_" + uid;
+
+  sectionsConfig.push({ id, dbKey, title: cleanTitle, order: sectionsConfig.length });
+  saveSectionsConfig();
+});
 </script>
 </body>
 </html>
