@@ -7,19 +7,28 @@
 <link rel="icon" href="/Pages/favicon.png" />    
   
 <style>
-body {
+html, body {
   margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
   font-family: Arial, sans-serif;
   font-size: 17px;
   background: #fafafa;
+  display: flex;
+  flex-direction: column;
+}
+
+#sectionsContainer {
+  overflow: hidden;
 }
 
 .manager-section {
-  margin: 30px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  margin: 0;
+  border: none;
   background: white;
-  cursor: pointer;
 }
 
 .manager-section.active-section {
@@ -119,11 +128,12 @@ body {
 
 .bookmarks {
   padding: 18px;
-  max-height: 300px;
+  height: calc(100vh - 200px);
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 12px;
+  align-content: start;
 }
 
 .bookmark-item {
@@ -233,7 +243,7 @@ body {
 #dataManagerOverlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.6);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -241,29 +251,30 @@ body {
 }
 
 #dataManagerPopup {
-  background: white;
-  border-radius: 10px;
+  background: #2c2c2e;
+  border-radius: 14px;
   width: 90%;
   max-width: 480px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  border: 1px solid #3a3a3c;
 }
 
 #dataManagerHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 1px solid #ddd;
-  background: #f5f5f5;
-  border-radius: 10px 10px 0 0;
+  padding: 16px 18px;
+  border-bottom: 1px solid #3a3a3c;
+  background: #3a3a3c;
 }
 
 #dataManagerHeader strong {
-  font-size: 16px;
+  font-size: 15px;
+  color: #f2f2f7;
 }
 
 #dataManagerClose {
@@ -271,13 +282,11 @@ body {
   border: none;
   font-size: 18px;
   cursor: pointer;
-  color: #888;
+  color: #aeaeb2;
   padding: 0 4px;
 }
 
-#dataManagerClose:hover {
-  color: #333;
-}
+#dataManagerClose:hover { color: #f2f2f7; }
 
 #dataManagerList {
   overflow-y: auto;
@@ -287,51 +296,52 @@ body {
   gap: 8px;
 }
 
+#dataManagerList::-webkit-scrollbar { width: 6px; }
+#dataManagerList::-webkit-scrollbar-thumb { background: #48484a; border-radius: 3px; }
+
 .dm-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  border: 1px solid #eee;
-  border-radius: 6px;
-  background: #fafafa;
+  border: 1px solid #3a3a3c;
+  border-radius: 10px;
+  background: #1c1c1e;
 }
 
-.dm-item-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+.dm-item-info { display: flex; flex-direction: column; gap: 2px; }
 
 .dm-item-title {
-  font-weight: bold;
+  font-weight: 600;
   font-size: 14px;
-  color: #222;
+  color: #f2f2f7;
 }
 
 .dm-item-meta {
   font-size: 12px;
-  color: #888;
+  color: #8e8e93;
 }
 
 .dm-delete-btn {
   background: none;
-  border: 1px solid #f99;
-  border-radius: 4px;
-  color: #c00;
+  border: 1px solid #ff453a;
+  border-radius: 6px;
+  color: #ff453a;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   padding: 4px 10px;
   flex-shrink: 0;
+  font-family: inherit;
 }
 
 .dm-delete-btn:hover {
-  background: #fde;
+  background: #ff453a;
+  color: #fff;
 }
 
 .dm-empty {
   text-align: center;
-  color: #aaa;
+  color: #636366;
   padding: 30px;
   font-size: 14px;
 }
@@ -339,160 +349,132 @@ body {
 /* ── Shared Toolbar ───────────────────────────────────── */
 #sharedToolbar {
   position: sticky;
-  top: 49px;
+  top: 50px;
   z-index: 99;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
-  padding: 6px 12px;
+  background: #2c2c2e;
+  border-bottom: 1px solid #3a3a3c;
+  padding: 5px 10px;
   overflow-x: auto;
-  white-space: nowrap;
-}
-
-#toolbarInner {
-  display: inline-flex;
-  gap: 6px;
-  flex-wrap: nowrap;
-}
-
-#toolbarInner button {
-  padding: 5px 11px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  font-size: 13px;
-  color: #444;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
+#sharedToolbar::-webkit-scrollbar { height: 3px; }
+#sharedToolbar::-webkit-scrollbar-thumb { background: #48484a; }
+
+#toolbarInner {
+  display: inline-flex;
+  gap: 5px;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+#toolbarInner button {
+  padding: 4px 11px;
+  border: 1px solid #48484a;
+  border-radius: 7px;
+  background: #3a3a3c;
+  cursor: pointer;
+  font-size: 12px;
+  color: #e5e5ea;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
 #toolbarInner button:hover {
-  background: #e8e8e8;
-  border-color: #aaa;
+  background: #48484a;
+  border-color: #636366;
+  color: #fff;
 }
 
-/* ── Responsive ────────────────────────────────────────── */
-
-/* Tablet */
-@media (max-width: 768px) {
-  .manager-section {
-    margin: 16px;
-  }
-
-  #addSectionBtn {
-    margin: 0 16px 16px 16px;
-    width: calc(100% - 32px);
-  }
-
-  #lockBar {
-    padding: 8px 16px;
-  }
-
-  .manager-title {
-    font-size: 17px;
-    max-width: 200px;
-  }
-
-  .tabs button, .subtabs button {
-    padding: 10px 14px;
-    font-size: 15px;
-    max-width: 160px;
-  }
-
-  .bookmarks {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 10px;
-    padding: 14px;
-    max-height: 260px;
-  }
-
-  .actions button {
-    font-size: 12px;
-    padding: 5px 10px;
-  }
+#toolbarInner .toolbar-sep {
+  width: 1px;
+  height: 18px;
+  background: #48484a;
+  margin: 0 3px;
+  flex-shrink: 0;
 }
 
-/* Mobile */
-@media (max-width: 480px) {
-  .manager-section {
-    margin: 10px;
-    border-radius: 8px;
-  }
+/* ── Section Tab Bar ──────────────────────────────────── */
+#sectionTabBar {
+  position: sticky;
+  z-index: 98;
+  display: flex;
+  align-items: center;
+  background: #2c2c2e;
+  border-bottom: 1px solid #3a3a3c;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  height: 42px;
+  flex-shrink: 0;
+}
 
-  #addSectionBtn {
-    margin: 0 10px 10px 10px;
-    width: calc(100% - 20px);
-    font-size: 14px;
-    padding: 10px;
-  }
+#sectionTabBar::-webkit-scrollbar { height: 3px; }
+#sectionTabBar::-webkit-scrollbar-thumb { background: #48484a; }
 
-  #lockBar {
-    padding: 6px 10px;
-    gap: 6px;
-  }
+#addTabBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  font-size: 20px;
+  font-weight: 300;
+  color: #aeaeb2;
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-right: 1px solid #3a3a3c;
+  flex-shrink: 0;
+  height: 100%;
+}
 
-  #pageTitle {
-    font-size: 15px;
-  }
+#addTabBtn:hover {
+  background: #3a3a3c;
+  color: #f2f2f7;
+}
 
-  #lockBtn {
-    font-size: 12px;
-    padding: 4px 10px;
-  }
+.section-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  font-size: 13px;
+  color: #aeaeb2;
+  cursor: pointer;
+  border-right: 1px solid #3a3a3c;
+  flex-shrink: 0;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: none;
+  background: #2c2c2e;
+  border-bottom: 2px solid transparent;
+  height: 42px;
+  font-family: inherit;
+  transition: background 0.1s;
+}
 
-  .manager-title {
-    font-size: 15px;
-    max-width: 140px;
-  }
+.section-tab:hover {
+  background: #3a3a3c;
+  color: #f2f2f7;
+}
 
-  .manager-title-bar {
-    padding: 10px 10px;
-    gap: 6px;
-  }
+.section-tab.active {
+  background: #1c1c1e;
+  color: #f2f2f7;
+  font-weight: 600;
+  border-bottom: 2px solid #0a84ff;
+}
 
-  .section-action-btn {
-    font-size: 13px;
-    padding: 3px 7px;
-  }
-
-  .tabs button, .subtabs button {
-    padding: 8px 10px;
-    font-size: 13px;
-    max-width: 120px;
-  }
-
-  .actions {
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 6px 8px;
-  }
-
-  .actions button {
-    font-size: 11px;
-    padding: 4px 8px;
-    margin: 2px;
-  }
-
-  .bookmarks {
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 8px;
-    padding: 10px;
-    max-height: 220px;
-  }
-
-  .bookmark-item img {
-    width: 30px;
-    height: 30px;
-  }
-
-  .bookmark-item a {
-    font-size: 10px;
-    max-width: 58px;
-  }
-
-  .section-btns {
-    gap: 4px;
-  }
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 600px) {
+  #lockBar { padding: 0 12px; }
+  #pageTitle { font-size: 13px; }
+  .section-tab { padding: 0 12px; font-size: 12px; }
+  .tabs button, .subtabs button { padding: 8px 12px; font-size: 12px; }
+  .bookmarks { grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 8px; padding: 12px; }
 }
 </style>
 </head>
@@ -521,18 +503,29 @@ body {
     <button data-action="add-folder">Add Folder</button>
     <button data-action="pin-folder">Pin Folder</button>
     <button data-action="delete-folder">Delete Folder</button>
+    <div class="toolbar-sep"></div>
     <button data-action="add-subfolder">Add Subfolder</button>
     <button data-action="pin-subfolder">Pin Subfolder</button>
     <button data-action="delete-subfolder">Delete Subfolder</button>
+    <div class="toolbar-sep"></div>
     <button data-action="add-bookmark">Add Bookmark</button>
     <button data-action="edit-bookmark">Edit Bookmark</button>
     <button data-action="delete-bookmark">Delete Bookmark</button>
+    <div class="toolbar-sep"></div>
+    <button data-action="move-left" title="Move section left">◀</button>
+    <button data-action="rename-section">Rename Tab</button>
+    <button data-action="delete-section">Delete Tab</button>
+    <button data-action="move-right" title="Move section right">▶</button>
   </div>
 </div>
 
+<div id="sectionTabBar">
+  <button id="addTabBtn">+</button>
+  <div id="sectionTabsList"></div>
+</div>
+
 <div id="sectionsContainer"></div>
-<p id="emptyMsg">No sections yet. Add one below!</p>
-<button id="addSectionBtn">+ Add New Section</button>
+<p id="emptyMsg" style="text-align:center;color:#aaa;padding:40px 30px;font-size:15px;display:none;">No sections yet. Click + to add one.</p>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -565,28 +558,35 @@ let activeManager = null;
 
 function setActiveManager(mgr) {
   activeManager = mgr;
-  // Highlight active section
-  document.querySelectorAll(".manager-section").forEach(el => el.classList.remove("active-section"));
-  if (mgr) mgr.container.classList.add("active-section");
+  // Highlight active tab
+  document.querySelectorAll(".section-tab").forEach(el => el.classList.remove("active"));
+  // Show only active section content
+  document.querySelectorAll(".manager-section").forEach(el => el.style.display = "none");
+  if (mgr) {
+    mgr.container.style.display = "block";
+    if (mgr.tabEl) mgr.tabEl.classList.add("active");
+  }
 }
 
 function showEditButtons(visible) {
   document.getElementById("sharedToolbar").style.display = visible ? "block" : "none";
-  document.querySelectorAll(".section-action-btn").forEach(btn => {
-    btn.style.display = visible ? "inline-block" : "none";
-  });
-  document.querySelectorAll(".section-btns").forEach(div => {
-    div.style.display = visible ? "flex" : "none";
-  });
-  document.getElementById("addSectionBtn").style.display = visible ? "block" : "none";
+  document.getElementById("addTabBtn").style.display = visible ? "flex" : "none";
   document.getElementById("dataManagerBtn").style.display = visible ? "inline-block" : "none";
+  // Update sticky top of tab bar based on toolbar visibility
+  updateStickyOffsets();
 }
 
 // Wire shared toolbar buttons
 document.getElementById("sharedToolbar").addEventListener("click", e => {
   const btn = e.target.closest("[data-action]");
-  if (!btn || !activeManager) return;
+  if (!btn) return;
   const action = btn.dataset.action;
+  // Section-level actions don't need activeManager bookmark data
+  if (action === "move-left") { if (activeManager) activeManager.moveSection(-1); return; }
+  if (action === "move-right") { if (activeManager) activeManager.moveSection(1); return; }
+  if (action === "rename-section") { if (activeManager) activeManager.renameSection(); return; }
+  if (action === "delete-section") { if (activeManager) activeManager.deleteSection(); return; }
+  if (!activeManager) return;
   if (action === "add-folder") activeManager.addFolder();
   else if (action === "pin-folder") activeManager.togglePinFolder();
   else if (action === "delete-folder") activeManager.deleteFolder();
@@ -596,6 +596,19 @@ document.getElementById("sharedToolbar").addEventListener("click", e => {
   else if (action === "add-bookmark") activeManager.addBookmark();
   else if (action === "edit-bookmark") activeManager.editBookmark();
   else if (action === "delete-bookmark") activeManager.deleteBookmark();
+});
+
+// + button adds new section
+document.getElementById("addTabBtn").addEventListener("click", () => {
+  const title = prompt("Section title:");
+  if (!title || !title.trim()) return;
+  const cleanTitle = title.trim();
+  const base = cleanTitle.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+  const uid = Date.now().toString();
+  const id = base + "_" + uid;
+  const dbKey = base + "Bookmarks_" + uid;
+  sectionsConfig.push({ id, dbKey, title: cleanTitle, order: sectionsConfig.length });
+  saveSectionsConfig();
 });
 
 document.getElementById("lockBtn").addEventListener("click", () => {
@@ -637,60 +650,63 @@ function saveSectionsConfig() {
 // ─── Render all sections ──────────────────────────────────────────────────────
 function renderAllSections() {
   const container = document.getElementById("sectionsContainer");
+  const tabsList = document.getElementById("sectionTabsList");
   const emptyMsg = document.getElementById("emptyMsg");
 
-  // Preserve existing managers by dbKey so we don't destroy live ones
   const existingManagers = {};
-  managers.forEach(m => {
-    existingManagers[m.dbKey] = m;
-  });
+  managers.forEach(m => { existingManagers[m.dbKey] = m; });
 
-  // Find managers no longer needed and destroy them
   const newDbKeys = sectionsConfig.map(s => s.dbKey);
-  managers.forEach(m => {
-    if (!newDbKeys.includes(m.dbKey)) m.destroy && m.destroy();
-  });
+  managers.forEach(m => { if (!newDbKeys.includes(m.dbKey)) m.destroy && m.destroy(); });
 
   managers = [];
   container.innerHTML = "";
+  tabsList.innerHTML = "";
 
   if (sectionsConfig.length === 0) {
     emptyMsg.style.display = "block";
-  } else {
-    emptyMsg.style.display = "none";
-    sectionsConfig.forEach((sec, idx) => {
-      const div = document.createElement("div");
-      div.id = "sec_" + sec.id;
-      div.className = "manager-section";
-      container.appendChild(div);
-
-      if (existingManagers[sec.dbKey]) {
-        // Reuse existing manager — just update its index and re-render into new div
-        const mgr = existingManagers[sec.dbKey];
-        mgr.sectionIndex = idx;
-        mgr.container = div;
-        mgr.buildLayout();
-        mgr.render(false);
-        managers.push(mgr);
-      } else {
-        // Brand new section
-        const mgr = new BookmarkManager("sec_" + sec.id, sec.dbKey, sec.title, idx);
-        managers.push(mgr);
-      }
-    });
+    showEditButtons(isUnlocked);
+    return;
   }
 
-  // Re-apply lock state after re-render
+  emptyMsg.style.display = "none";
+
+  sectionsConfig.forEach((sec, idx) => {
+    // Create tab
+    const tab = document.createElement("div");
+    tab.className = "section-tab";
+    tab.title = sec.title;
+    tab.textContent = sec.title;
+    tabsList.appendChild(tab);
+
+    // Create content div (hidden by default)
+    const div = document.createElement("div");
+    div.id = "sec_" + sec.id;
+    div.className = "manager-section";
+    div.style.display = "none";
+    container.appendChild(div);
+
+    let mgr;
+    if (existingManagers[sec.dbKey]) {
+      mgr = existingManagers[sec.dbKey];
+      mgr.sectionIndex = idx;
+      mgr.container = div;
+      mgr.tabEl = tab;
+      mgr.buildLayout();
+      mgr.render(false);
+    } else {
+      mgr = new BookmarkManager("sec_" + sec.id, sec.dbKey, sec.title, idx);
+      mgr.tabEl = tab;
+    }
+    managers.push(mgr);
+
+    tab.addEventListener("click", () => setActiveManager(mgr));
+  });
+
   showEditButtons(isUnlocked);
 
-  // Auto-activate first section
-  if (managers.length > 0 && !activeManager) {
-    setActiveManager(managers[0]);
-  } else if (activeManager) {
-    // Re-activate same manager if it still exists
-    const stillExists = managers.find(m => m.dbKey === activeManager.dbKey);
-    setActiveManager(stillExists || (managers.length > 0 ? managers[0] : null));
-  }
+  const prevActive = activeManager ? managers.find(m => m.dbKey === activeManager.dbKey) : null;
+  setActiveManager(prevActive || managers[0]);
 }
 
 // ─── BookmarkManager ──────────────────────────────────────────────────────────
@@ -812,47 +828,13 @@ class BookmarkManager {
 
   buildLayout() {
     this.container.innerHTML = `
-      <div class="manager-title-bar">
-        <span class="manager-title">${this.title}</span>
-        <div class="section-btns">
-          <button class="section-action-btn" data-action="move-up" title="Move up"><b>↑</b></button>
-          <button class="section-action-btn" data-action="move-down" title="Move down"><b>↓</b></button>
-          <button class="section-action-btn" data-action="rename" title="Rename section">✏️</button>
-          <button class="section-action-btn danger" data-action="delete-section" title="Delete section">🗑</button>
-        </div>
-      </div>
       <div class="tabs"></div>
       <div class="subtabs"></div>
       <div class="bookmarks"></div>
     `;
-
     this.tabsDiv = this.container.querySelector(".tabs");
     this.subtabsDiv = this.container.querySelector(".subtabs");
     this.bookmarksDiv = this.container.querySelector(".bookmarks");
-    this.titleEl = this.container.querySelector(".manager-title");
-
-    // Click section to make it active
-    this.container.addEventListener("click", () => setActiveManager(this));
-
-    // Show full title on click if truncated
-    this.titleEl.addEventListener("click", () => {
-      if (this.titleEl.scrollWidth > this.titleEl.clientWidth) {
-        alert(sectionsConfig[this.sectionIndex].title);
-      }
-    });
-
-    this.container.querySelector("[data-action='move-up']")
-      .addEventListener("click", () => this.moveSection(-1));
-
-    this.container.querySelector("[data-action='move-down']")
-      .addEventListener("click", () => this.moveSection(1));
-
-    this.container.querySelector("[data-action='rename']")
-      .addEventListener("click", () => this.renameSection());
-
-    this.container.querySelector("[data-action='delete-section']")
-      .addEventListener("click", () => this.deleteSection());
-
   }
 
   // ── Section management ──────────────────────────────────────────────────────
@@ -913,12 +895,17 @@ class BookmarkManager {
     if (!newTitle || !newTitle.trim() || newTitle.trim() === current) return;
     sectionsConfig[this.sectionIndex].title = newTitle.trim();
     saveSectionsConfig();
-    this.titleEl.textContent = newTitle.trim();
+    if (this.tabEl) {
+      this.tabEl.textContent = newTitle.trim();
+      this.tabEl.title = newTitle.trim();
+    }
   }
 
   deleteSection() {
     const title = sectionsConfig[this.sectionIndex].title;
-    if (!confirm(`Delete section "${title}"?\n\nNote: Bookmark data in Firebase will NOT be deleted.`)) return;
+    if (!confirm(`Delete section "${title}"? This will permanently delete all its bookmarks too.`)) return;
+    this.dbRef.remove();
+    this.pinsRef.remove();
     sectionsConfig.splice(this.sectionIndex, 1);
     saveSectionsConfig();
   }
@@ -1165,13 +1152,21 @@ class BookmarkManager {
   }
 }
 
-// ─── Sticky toolbar offset ───────────────────────────────────────────────────
-function updateToolbarTop() {
+// ─── Sticky offset calculator ────────────────────────────────────────────────
+function updateStickyOffsets() {
   const lockBarH = document.getElementById("lockBar").offsetHeight;
-  document.getElementById("sharedToolbar").style.top = lockBarH + "px";
+  const toolbarEl = document.getElementById("sharedToolbar");
+  const tabBarEl = document.getElementById("sectionTabBar");
+  const toolbarVisible = toolbarEl.style.display !== "none";
+  toolbarEl.style.top = lockBarH + "px";
+  const toolbarH = toolbarVisible ? toolbarEl.offsetHeight : 0;
+  tabBarEl.style.top = (lockBarH + toolbarH) + "px";
+  tabBarEl.style.position = "sticky";
+  tabBarEl.style.zIndex = "98";
 }
-window.addEventListener("resize", updateToolbarTop);
-updateToolbarTop();
+window.addEventListener("resize", updateStickyOffsets);
+// Run after render
+setTimeout(updateStickyOffsets, 100);
 
 // ─── Data Manager ────────────────────────────────────────────────────────────
 document.getElementById("dataManagerBtn").addEventListener("click", () => {
@@ -1263,20 +1258,7 @@ function openDataManager() {
   });
 }
 
-// ─── Add Section ──────────────────────────────────────────────────────────────
-document.getElementById("addSectionBtn").addEventListener("click", () => {
-  const title = prompt("Section title:");
-  if (!title || !title.trim()) return;
 
-  const cleanTitle = title.trim();
-  const base = cleanTitle.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
-  const uid = Date.now().toString();
-  const id = base + "_" + uid;
-  const dbKey = base + "Bookmarks_" + uid;
-
-  sectionsConfig.push({ id, dbKey, title: cleanTitle, order: sectionsConfig.length });
-  saveSectionsConfig();
-});
 </script>
 </body>
 </html>
