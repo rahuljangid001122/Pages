@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gallery</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0d0d0d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+      gap: 0;
+    }
+
+    .img-wrap {
+      width: 100%;
+      max-width: 780px;
+      margin-bottom: 18px;
+      overflow: hidden;
+      border-radius: 4px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: rise 0.55s ease forwards;
+    }
+
+    .img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .img-wrap:hover img {
+      transform: scale(1.025);
+    }
+
+    @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .img-wrap:nth-child(1)  { animation-delay: 0.05s; }
+    .img-wrap:nth-child(2)  { animation-delay: 0.10s; }
+    .img-wrap:nth-child(3)  { animation-delay: 0.15s; }
+    .img-wrap:nth-child(4)  { animation-delay: 0.20s; }
+    .img-wrap:nth-child(5)  { animation-delay: 0.25s; }
+    .img-wrap:nth-child(6)  { animation-delay: 0.30s; }
+    .img-wrap:nth-child(7)  { animation-delay: 0.35s; }
+    .img-wrap:nth-child(8)  { animation-delay: 0.40s; }
+    .img-wrap:nth-child(9)  { animation-delay: 0.45s; }
+    .img-wrap:nth-child(10) { animation-delay: 0.50s; }
+    .img-wrap:nth-child(11) { animation-delay: 0.55s; }
+    .img-wrap:nth-child(12) { animation-delay: 0.60s; }
+  </style>
+</head>
+<body>
+
+  <div class="img-wrap"><img src="Pages/images/fun_01.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_02.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_03.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_04.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_05.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_06.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_07.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_08.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_09.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_10.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_11.jpg" alt="" /></div>
+  <div class="img-wrap"><img src="Pages/images/fun_12.jpg" alt="" /></div>
+
+</body>
+</html>
